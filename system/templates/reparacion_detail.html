@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block main-content %}
+     <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading"> Reparacion <span class="pull-right">#{{ object.id }}</span></div>
+                            <div class="panel-wrapper collapse in" aria-expanded="true">
+                                <div class="panel-body">
+                                        <div class="form-body">
+                                            <h3 class="box-title">Camion: {{ object.camion_id }}</h3>
+                                            <hr class="m-t-0 m-b-40">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Rotura:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.rotura }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Costo USD:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.costo_usd }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Estado:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">{% if object.estado == False %}Iniciada{% elif object.estado == True  %}Terminada{% endif %}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Costo MX:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.costo_mx }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Fecha de Inicio:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"><i class="fa fa-calendar"></i>  {{ object.fecha_inicio }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Fecha de terminación:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"><i class="fa fa-calendar"></i>  {{ object.fecha_fin }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Detecto:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.detecto }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Fecha de detección:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"><i class="fa fa-calendar"></i>  {{ object.detecto_fecha }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Superviso:</label>
+                                                        <div class="col-md-9">
+                                                             <p class="form-control-static"> {{ object.supervisor }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Fecha de supervición:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"><i class="fa fa-calendar"></i>  {{ object.supervisor_fecha }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Autorizo:</label>
+                                                        <div class="col-md-9">
+                                                             <p class="form-control-static">{{ object.autorizo }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Fecha de autorización:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"><i class="fa fa-calendar"></i>  {{ object.autorizo_fecha }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+
+
+                                        <div class="col-md-12">
+                                            <div class="table-responsive m-t-40" style="clear: both;">
+                                                <h3 class="box-title m-b-0">Piezas y mano de obra</h3>
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center">Descripción</th>
+                                                            <th class="text-center">Tipo</th>
+                                                            <th class="text-center">Cantidad</th>
+                                                            <th class="text-center">Provedor</th>
+                                                            <th class="text-center">Factura</th>
+                                                            <th class="text-center">Costo USD</th>
+                                                            <th class="text-center">Costo MX</th>
+                                                            <th class="text-center">Pago</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                       {% for f in orepa %}
+                                                        <tr>
+                                                            <td class="text-center">{{ f.descripcion }}</td>
+                                                            <td class="text-center">{% if f.tipo == 'P' %}Cambio de pieza{% elif f.tipo == 'MO' %}Mano de obra{% endif %}</td>
+                                                            <td class="text-center">{{ f.cantidad }}</td>
+                                                            <td class="text-center">{{ f.provedor }}</td>
+                                                            <td class="text-center">{{ f.factura }}</td>
+                                                            <td class="text-center">{{ f.costo_r_usd }}</td>
+                                                            <td class="text-center">{{ f.costo_r_mx }}</td>
+                                                            <td class="text-center">{% if f.tipo_pago == 'E' %}Efectivo{% elif f.tipo_pago == 'CH' %}Cheque{% endif %}</td>
+                                                        </tr>
+                                                       {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                            <div class="form-actions" style="margin-left: 25px; padding-bottom: 25px;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="row">
+                                                        <div class="col-md-offset-3 col-md-9">
+                                                            <button type="submit" class="btn btn-info" onclick="window.location.href='{% url 'update' 'reparacion' object.id %}'"> <i class="fa fa-pencil"></i> Editar</button>
+                                                            <button type="button" class="btn btn-default" onclick="window.history.go(-1);">Regresar</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6"> </div>
+                                            </div>
+                            </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+
+{% block js %}
+
+
+{% endblock %}

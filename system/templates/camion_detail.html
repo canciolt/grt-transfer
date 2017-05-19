@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block main-content %}
+     <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading"> Camion <span class="pull-right">#{{ object.numero }}</span></div>
+                            <div class="panel-wrapper collapse in" aria-expanded="true">
+                                <div class="panel-body">
+                                        <div class="form-body">
+                                            <h3 class="box-title">Marca: {{ object.marca|capfirst }}</h3>
+                                            <hr class="m-t-0 m-b-40">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Modelo:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.modelo }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Placa:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.placa }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Serie:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.serie }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Millaje:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.millaje }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">TAG:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.tag }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Decal:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.decal }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Estado:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {% if object.estado == False %}Libre{% else %}Ocupado{% endif %} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Última ubicación:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">{{ ubi }}</p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <h3 class="box-title">Documentos</h3>
+                                            <hr class="m-t-0 m-b-40">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Circulación:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.circulacion }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> <i class="fa fa-calendar"></i> {{ object.expira_circulacion }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Seguro MX:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ si.smx.seguromx }} </p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> <i class="fa fa-calendar"></i> {{ si.smx.expira_seguromx }}</p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                        <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Seguro US:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ si.sus.segurous }} </p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> <i class="fa fa-calendar"></i> {{ si.sus.expira_segurous }}</p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                        <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Inspección US:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">  {{ si.ins.inspeccion }}</p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> <i class="fa fa-calendar"></i> {{ si.ins.expira }}</p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                        <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Verificación:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">  {{ si.ver.verificacion }}</p>
+
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> <i class="fa fa-calendar"></i> {{ si.ver.expira }}</p>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                        <div class="col-md-12">
+                                            <div class="table-responsive m-t-40" style="clear: both;">
+                                                <h3 class="box-title m-b-0">Desglose de Mantenimientos</h3>
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center">Rotura</th>
+                                                            <th class="text-center">Fecha de inicio</th>
+                                                            <th class="text-center">Fecha de terminación</th>
+                                                            <th class="text-center">Costo USD</th>
+                                                            <th class="text-center">Costo MX</th>
+                                                            <th class="text-center">Detecto</th>
+                                                            <th class="text-center">Estado</th>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+
+                                                    {% for r in repa %}
+                                                        <tr>
+                                                        <td class="text-center">{{ r.rotura }}</td>
+                                                        <td class="text-center">{{ r.fecha_inicio|date:"d/n/Y f A" }}</td>
+                                                        <td class="text-center">{{ r.fecha_fin|date:"d/n/Y f A" }}</td>
+                                                        <td class="text-center">{{ r.costo_usd }}</td>
+                                                        <td class="text-center">{{ r.costo_mx }}</td>
+                                                        <td class="text-center">{{ r.detecto }}</td>
+                                                        <td class="text-center">{% if r.estado == False %}Iniciada{% elif r.estado == True  %}Terminada{% endif %}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                            <div class="form-actions" style="margin-left: 25px; padding-bottom: 25px;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="row">
+                                                        <div class="col-md-offset-3 col-md-9">
+                                                            <button type="submit" class="btn btn-info" onclick="window.location.href='{% url 'update' 'camion' object.id %}'"> <i class="fa fa-pencil"></i> Editar</button>
+                                                            <button type="button" class="btn btn-default" onclick="window.history.go(-1);">Regresar</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6"> </div>
+                                            </div>
+                            </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+
+{% block js %}
+
+
+{% endblock %}

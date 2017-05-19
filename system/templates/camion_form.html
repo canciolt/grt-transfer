@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+
+
+{% block main-content %}
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-wrapper collapse in" aria-expanded="true">
+                                <div class="panel-body">
+                                    <form action="" data-toggle="validator"  method="post">{% csrf_token %}
+                                        <div class="form-body">
+                                            <h3 class="box-title">{% if accion == 'update' %}Editar Camion{% else %}Agregar Camion{% endif %}</h3>
+                                            <hr>
+                                        {% if accion == 'update' %}
+                                       <div class="button-box text-left">
+                                            <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add-camionextra' 'verificacion' object.id %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Verificación</button>
+                                            <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add-camionextra' 'inspeccion' object.id %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Inspección</button>
+                                            <button class="btn btn-custom waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add-camionextra' 'seguromx' object.id %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Seguro MX</button>
+                                            <button class="btn btn-custom waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add-camionextra' 'segurous' object.id %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Seguro US</button>
+                                        </div>
+                                        {% endif %}
+
+
+                                            <div class="row">
+                                                {% for field in form %}
+                                                    <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        {% if field.name == "expira_circulacion" %}
+                                                            <label class="control-label">{{ field.label_tag }}</label>
+                                                            <div class="input-group">
+                                                            {{ field }}<span class="input-group-addon"><i class="icon-calender"></i></span>
+                                                            </div>
+                                                        {% elif field.name == "expira_seguromx" %}
+                                                            <label class="control-label">{{ field.label_tag }}</label>
+                                                            <div class="input-group">
+                                                            {{ field }}<span class="input-group-addon"><i class="icon-calender"></i></span>
+                                                            </div>
+                                                         {% elif field.name == "expira_segurous" %}
+                                                            <label class="control-label">{{ field.label_tag }}</label>
+                                                            <div class="input-group">
+                                                            {{ field }}<span class="input-group-addon"><i class="icon-calender"></i></span>
+                                                            </div>
+                                                        {% else %}
+                                                        <label class="control-label">{{ field.label_tag }}</label>
+                                                        {{ field }}
+                                                        {% endif %}
+                                                        {% if field.errors %}
+                                                            {% for f in field.errors%}
+                                                                <span class="alert-block"><small>{{ f|safe }}</small></span>
+                                                            {% endfor %}
+                                                        {% else %}
+                                                           {% if field.help_text %}
+                                                            <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
+                                                        {% endif %}
+                                                        {% endif %}
+
+                                                    </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success"> <i class="fa fa-check"></i>Agregar</button>
+                                            <button type="button" class="btn btn-default" onclick="window.history.go(-1);">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+{% endblock %}
+{% block css %}
+    <link href="/static/system/plugins/bower_components/switchery/dist/switchery.min.css" rel="stylesheet" />
+    <link href="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css" />
+
+{% endblock %}
+{% block js %}
+    <script src="/static/system/plugins/bower_components/switchery/dist/switchery.min.js"></script>
+    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.es.min.js"></script>
+    <script src="/static/system/js/validator.js"></script>
+    <script>
+            jQuery(document).ready(function () {
+                // Switch
+                var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
+                $('.js-switch').each(function () {
+                    new Switchery($(this)[0], $(this).data());
+                });
+                // Calendario
+                        jQuery('.mydatepicker, #datepicker').datepicker({language: 'es'});
+                        jQuery('#datepicker-autoclose').datepicker({
+                            autoclose: true
+                            , todayHighlight: true
+                        });
+            });
+        </script>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static "system/plugins/images/favicon.png" %}">
+    <title>Grt-Transfer</title>
+    <link href="{% static "system/bootstrap/dist/css/bootstrap.min.css" %}" rel="stylesheet">
+    <link href="{% static "system/plugins/bower_components/bootstrap-extension/css/bootstrap-extension.css" %}" rel="stylesheet">
+    <link href="{% static "system/plugins/bower_components/sidebar-nav/dist/sidebar-nav.min.css" %}" rel="stylesheet">
+    <link href="{% static "system/plugins/bower_components/toast-master/css/jquery.toast.css" %}" rel="stylesheet">
+   <!-- animation CSS -->
+    <link href="{% static "system/css/animate.css" %}" rel="stylesheet">
+    <link href="{% static "system/css/style.css" %}" rel="stylesheet">
+                              
+
+    <link href="{% static "system/css/colors/megna.css" %}" id="theme" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>	
+	<![endif]-->	
+	{% block css %}{% endblock %}
+</head>
+
+<body>
+
+<!-- Preloader -->
+    <div class="preloader">
+        <div class="cssload-speeding-wheel"></div>
+    </div>
+	
+	<div id="wrapper">
+	
+	{% include "header.html" %}
+	
+	{% include "menu.html" %}
+	
+	<!-- Page Content -->
+        <div id="page-wrapper">
+            <div class="container-fluid">
+                <div class="row bg-title">
+                    <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
+                        <h4 class="page-title"></h4> </div>
+                    <div class="col-lg-9 col-sm-8 col-md-8 col-xs-12"> 
+                        <ol class="breadcrumb">
+                            <li><a href="/">Home</a></li>
+                            <li class="active">--</li>
+                        </ol>
+                    </div>
+                    <!-- /.col-lg-12 -->
+                </div>
+                <!-- Main-Content -->
+
+                        {% block main-content %}{% endblock %}
+				
+                <!-- End-Main-Content -->
+				
+				{% include "panel.html" %}
+				
+			</div>
+			<!-- /.container-fluid -->
+			{% include "footer.html" %}
+		</div>
+	
+	</div>
+	<!-- /#wrapper -->
+    <script src="{% static "system/plugins/bower_components/jquery/dist/jquery.min.js" %}"></script>
+    <script src="{% static "system/bootstrap/dist/js/tether.min.js" %}"></script>
+    <script src="{% static "system/bootstrap/dist/js/bootstrap.min.js" %}"></script>
+    <script src="{% static "system/plugins/bower_components/bootstrap-extension/js/bootstrap-extension.min.js" %}"></script>
+    <script src="{% static "system/plugins/bower_components/sidebar-nav/dist/sidebar-nav.min.js" %}"></script>
+    <script src="{% static "system/js/jquery.slimscroll.js" %}"></script>
+    <script src="{% static "system/js/waves.js" %}"></script>
+    <script src="{% static "system/js/custom.min.js" %}"></script>
+    <script src="{% static "system/plugins/bower_components/toast-master/js/jquery.toast.js" %}"></script>
+    <script src="{% static "system/js/toastr.js" %}"></script>
+    <!--Style Switcher -->
+    <script src="{% static "system/plugins/bower_components/styleswitcher/jQuery.style.switcher.js" %}"></script>
+    {% if messages %}
+          <script>
+          {% for message in messages %}
+               messages('{{ message.tags }}','{{ message }}');
+          {% endfor %}
+          </script>
+    {% endif %}
+    {% block js %}{% endblock %}
+</body>
+
+</html>

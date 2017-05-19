@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block main-content %}
+     <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel panel-info">
+                            <div class="panel-heading"> Operador <span class="pull-right">#{{ object.id }}</span></div>
+                            <div class="panel-wrapper collapse in" aria-expanded="true">
+                                <div class="panel-body">
+                                        <div class="form-body">
+                                            <h3 class="box-title">Datos Personales:</h3>
+                                            <hr class="m-t-0 m-b-40">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Nombre:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.nombre }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Dirección:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.direccion }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Colonia:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.colonia }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Ciudad:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.ciudad }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Telefono:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.telefono }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Celular:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.celular }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Radio:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">  {{ object.radio }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Estado:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">{% if object.estado == False %}Libre{% else %}Ocupado{% endif %}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <h3 class="box-title">Documentos</h3>
+                                            <hr class="m-t-0 m-b-40">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">CURP:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.curp }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Pasaporte:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.pasaporte }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                            <!--/row-->
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Seguro Social:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.nss }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">RFC:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> {{ object.rfc }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                        <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Visa:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"> {{ object.visa }} </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> <i class="fa fa-calendar"></i> {{ object.visa_expira }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                        <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">FAST:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">  {{ object.fast }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> <i class="fa fa-calendar"></i> {{ object.fast_expira }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                        <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Licencia:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">  {{ object.licencia }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> <i class="fa fa-calendar"></i> {{ object.licencia_expira }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+                                        <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Seguro Medico:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static">  {{ object.medico }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label col-md-3">Vence:</label>
+                                                        <div class="col-md-9">
+                                                            <p class="form-control-static"></b> <i class="fa fa-calendar"></i> {{ object.medico_expira }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--/span-->
+                                            </div>
+
+                                </div>
+                            </div>
+                            <div class="form-actions" style="margin-left: 25px; padding-bottom: 25px;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="row">
+                                                        <div class="col-md-offset-3 col-md-9">
+                                                            <button type="submit" class="btn btn-info" onclick="window.location.href='{% url 'update' 'operador' object.id %}'"> <i class="fa fa-pencil"></i> Editar</button>
+                                                            <button type="button" class="btn btn-default" onclick="window.history.go(-1);">Regresar</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6"> </div>
+                                            </div>
+                            </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+
+{% block js %}
+
+
+{% endblock %}

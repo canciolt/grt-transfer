@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+
+
+{% block main-content %}
+
+ <div id="content-container" class="container p-none">
+        <div class="side-p">
+
+        </div>
+    </div>
+
+
+    <div class="row">
+                    <div class="col-md-6 center-block">
+                        <div class="white-box">
+                            <center><h3>Usted esta seguro?</h3></center>
+                            <center><p>Para eliminar pulse confirmar</p></center>
+                            <form action="" method="post">
+                                {% csrf_token %}
+
+                                <div class="text-center">
+                                    <input class="btn btn-inverse" type="button" value="Cancelar" onclick="window.history.go(-1);"/>
+                                    <input class="btn btn-danger" type="submit" value="Confirmar"/>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+    </div>
+
+
+
+{% endblock %}
+{% block css %}
+
+{% endblock %}
+{% block js %}
+
+{% endblock %}
