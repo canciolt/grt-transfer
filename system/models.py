@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
-from  django.contrib.auth.models import User
+from  django.contrib.auth.models import User, AbstractUser
 from django.conf import settings
 from django.core.validators import RegexValidator
 import json
@@ -173,6 +173,31 @@ class Multas_Camion(models.Model):
 
     def __str__(self):
         return self.numero
+
+
+class Cliente(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    pais = models.CharField(max_length=20, verbose_name="país")
+    estado = models.CharField(max_length=20, verbose_name="estado")
+    direccion = models.CharField(max_length=50, verbose_name="dirección")
+    cpostal = models.CharField(max_length=7, verbose_name="código postal")
+    rfc = models.CharField(max_length=15, verbose_name="rfc")
+    telefono = models.CharField(blank=True, max_length=10, verbose_name="teléfono")
+    contacto = models.CharField(max_length=50, verbose_name="contacto")
+    descripcion = models.CharField(max_length=255, verbose_name="descripcion")
+    zip = models.CharField(max_length=7, verbose_name="código zip")
+    tax = models.CharField(max_length=45, verbose_name="tax")
+
+    def __str__(self):
+        return self.numero
+
+
+
+
+
+
+
+
 
 
 class Flujo_Trabajo(models.Model):

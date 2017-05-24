@@ -19,7 +19,7 @@
     <option name="TEMPLATE_CONFIGURATION" value="Django" />
     <option name="TEMPLATE_FOLDERS">
       <list>
-        <option value="$MODULE_DIR$/system/templates" />
+        <option value="$MODULE_DIR$/static/system/plugins/bower_components/chartist-js/site/templates" />
       </list>
     </option>
   </component>

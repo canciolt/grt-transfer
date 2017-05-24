@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block main-content %}
+
+                <div class="row">
+                    <div class="col-md-8 center-block">
+                        <div class="panel panel-info">
+                            <div class="panel-wrapper collapse in" aria-expanded="true">
+                                <div class="panel-body">
+                                    <form action="" data-toggle="validator"  method="post">{% csrf_token %}
+                                        <div class="form-body">
+                                            <h3 class="box-title">{% if accion == 'update' %}Editar Usuario{% else %}Agregar Usuario{% endif %}</h3>
+                                            <hr>
+                                            <div class="row">
+                                                {% for field in form %}
+                                                    <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label class="control-label">{{ field.label_tag }}</label>
+                                                        {{ field }}
+                                                        {% if field.errors %}
+                                                            {% for f in field.errors%}
+                                                                <span class="alert-block"><small>{{ f|safe }}</small></span>
+                                                            {% endfor %}
+                                                        {% else %}
+                                                           {% if field.help_text %}
+                                                            <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
+                                                        {% endif %}
+                                                        {% endif %}
+                                                    </div>
+                                                    </div>
+                                                {% endfor %}
+
+
+                                            </div>
+
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-success"> <i class="fa fa-check"></i>Agregar</button>
+                                            <button type="button" class="btn btn-default" onclick="window.history.go(-1);">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+{% endblock %}
+{{% block css %}
+    <link href="/static/system/plugins/bower_components/switchery/dist/switchery.min.css" rel="stylesheet" />
+
+{% endblock %}
+{% block js %}
+    <script src="/static/system/plugins/bower_components/switchery/dist/switchery.min.js"></script>
+    <script src="/static/system/js/validator.js"></script>
+    <script>
+            jQuery(document).ready(function () {
+                // Switch
+                var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
+                $('.js-switch').each(function () {
+                    new Switchery($(this)[0], $(this).data());
+                });
+            });
+        </script>
+{% endblock %}

@@ -12,21 +12,22 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import FormView, RedirectView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponseRedirect
 from django.views.generic import CreateView, UpdateView, ListView, DeleteView, DetailView
 from django.http import Http404
-from system.forms import CamionForm, OperadorForm, Vcamion_Form, \
-    Icamion_Form, Repcamion_Form, ORepcamion_Form, SMXcamion_Form
-from system.models import Camion, Operador, Reparacion_Camion, Orden_Reparacion_Camion,\
-    Ubicacion_Camion, Seguromx_Camion, Segurous_Camion, Verificacion_Camion, Inspeccion_Camion_US
+from system.forms import *
+from system.models import *
 from django.shortcuts import render, redirect
-from django.db import transaction
 from django.forms.models import inlineformset_factory
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.db import models
 from django.shortcuts import render
 from django.db import transaction
+from django.shortcuts import get_object_or_404
+
+
 
 
 @method_decorator(never_cache, name='dispatch')
@@ -76,10 +77,11 @@ class LogoutView(RedirectView):
 
 class Dinamic_Add(SuccessMessageMixin,CreateView):
 
-    models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion}
-    forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form}
+    models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion,}
+    forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form,}
 
     @method_decorator(login_required)
+    @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         if kwargs['model'] in self.models:
@@ -120,11 +122,14 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
 
 class Dinamic_Update(SuccessMessageMixin,UpdateView):
 
-    models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion}
-    forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form}
+    models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
+              "usuario":User}
+    forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
+            "usuario":User_Form}
 
 
     @method_decorator(login_required)
+    @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         if kwargs['model'] in self.models:
@@ -160,15 +165,13 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
                     return super(Dinamic_Update, self).form_invalid(form)
         return super(Dinamic_Update, self).form_valid(form)
 
-
-
-
-
 class Dinamic_List(ListView):
 
-    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion}
+    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
+              "usuario":User}
 
     @method_decorator(login_required)
+    @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         if kwargs['model'] in self.models:
@@ -181,9 +184,11 @@ class Dinamic_List(ListView):
 
 class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 
-    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion}
+    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
+              "usuario":User}
 
     @method_decorator(login_required)
+    @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         if kwargs['model'] in self.models:
@@ -208,6 +213,7 @@ class Dinamic_Detail(DetailView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion}
 
     @method_decorator(login_required)
+    @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         if kwargs['model'] in self.models:
@@ -235,13 +241,46 @@ class Dinamic_Detail(DetailView):
             context['si'] = {"smx":smx,"sus":sus,"ins":ins,"ver":ver}
         return context
 
+
+@method_decorator(login_required, name='dispatch')
+@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
+class Registro_View(SuccessMessageMixin,FormView):
+    template_name = 'usuario_form.html'
+    form_class = Resgistro_Form
+    success_url = '/list/usuario'
+    success_message = 'El usuario se agrego satisfactoriamente'
+
+    def form_valid(self, form):
+        user = User.objects.create_user(
+            username=form.cleaned_data['username'],
+            password=form.cleaned_data['password1'],
+            email=form.cleaned_data['email']
+        )
+        return super(Registro_View, self).form_valid(form)
+
+@method_decorator(login_required, name='dispatch')
+@method_decorator(staff_member_required, name='dispatch')
+@method_decorator(csrf_protect, name='dispatch')
+class Password_View(SuccessMessageMixin,FormView):
+    template_name = 'usuario_form.html'
+    form_class = EditPasswordForm
+    success_url = '/list/usuario'
+    success_message = 'La contraseña se cambio satisfactoriamente'
+
+    def get_form_kwargs(self):
+        kwargs = super(Password_View, self).get_form_kwargs()
+        user = get_object_or_404(User, pk=self.kwargs['pk'])
+        kwargs['user'] = user
+        return kwargs
+
+
 @login_required
+@staff_member_required
 @csrf_protect
 def Add_Exta_Camion(request,model,pk):
     forms = {"verificacion": Vcamion_Form, "inspeccion": Icamion_Form, \
              "seguromx":SMXcamion_Form, "segurous":SUScamion_Form }
-
-
     if model not in forms:
         raise Http404
     camion = Camion.objects.get(pk=pk)

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from models import Camion, Operador, Verificacion_Camion, Inspeccion_Camion_US, \
-                   Reparacion_Camion, Orden_Reparacion_Camion, Seguromx_Camion,\
-                   Segurous_Camion
+from models import *
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
 
 
 
@@ -144,8 +144,43 @@ class ORepcamion_Form(forms.ModelForm):
           'costo_r_mx': forms.TextInput(attrs={'class': 'form-control', 'required':''}),
           'costo_r_usd': forms.TextInput(attrs={'class': 'form-control', 'required':''}),
           'tipo_pago': forms.Select(attrs={'class': 'form-control', 'required':''}),
+      }
 
+class User_Form(forms.ModelForm):
+
+   class Meta:
+      model = User
+      fields = ['username','first_name','last_name','email','is_staff','is_active', \
+                'is_superuser',]
+      widgets = {
+          'username': forms.TextInput(attrs={'class': 'form-control'}),
+          'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+          'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+          'email': forms.TextInput(attrs={'class': 'form-control'}),
+          'is_staff': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
+          'is_active': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
+          'is_superuser': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
       }
 
 
+class Resgistro_Form(UserCreationForm):
+    username = forms.RegexField(label=u"Usuario",regex=r'^[a-z\d_]{4,15}$', widget=forms.TextInput(
+        attrs={'maxlength': 30, 'class': 'form-control', 'placeholder': _(u"Usuario")}))
+    email = forms.EmailField(label=u"Correo",widget=forms.TextInput(
+        attrs={'maxlength': 60, 'class': 'form-control', 'placeholder': _(u"Correo")}))
+    password1 = forms.CharField(label=u"Contraseña", widget=forms.PasswordInput(
+        attrs={'maxlength': 30, 'class': 'form-control', 'placeholder': _(u"Contraseña")}))
+    password2 = forms.CharField(label=u"Confirmar", widget=forms.PasswordInput(
+        attrs={'maxlength': 30, 'class': 'form-control', 'placeholder': _(u"Confirmar contraseña")}))
 
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
+
+
+class EditPasswordForm(SetPasswordForm):
+
+    new_password1 = forms.CharField(label=u"Contraseña", widget=forms.PasswordInput(
+        attrs={'maxlength': 30, 'class': 'form-control', 'placeholder': _(u"Contraseña")}))
+    new_password2 = forms.CharField(label=u"Confirmar",widget=forms.PasswordInput(
+        attrs={'maxlength': 30, 'class': 'form-control', 'placeholder': _(u"Confirmar contraseña")}))
