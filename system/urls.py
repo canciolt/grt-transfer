@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url
 from system.views import *
+from system.ajax import *
 
 
 urlpatterns = [
@@ -16,4 +17,8 @@ urlpatterns = [
    url(r'^delete/(?P<model>\w+)/(?P<pk>[\d+]+)$', Dinamic_Delete.as_view(), name='delete'),
    url(r'^detail/(?P<model>\w+)/(?P<pk>[\d+]+)$', Dinamic_Detail.as_view(), name='view'),
    url(r'^add/camion/(?P<model>\w+)/(?P<pk>[\d+]+)$', Add_Exta_Camion, name='add-camionextra'),
+
+   # Ajax URL
+   url(r'^ajax/cliente/estados/$', prueba, name='ajax-estados'),
+
 ]

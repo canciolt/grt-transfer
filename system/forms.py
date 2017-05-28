@@ -5,8 +5,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
 
 
-
-
 class CamionForm(forms.ModelForm):
 
    class Meta:
@@ -25,7 +23,6 @@ class CamionForm(forms.ModelForm):
           'estado': forms.Select(attrs={'class': 'form-control'}),
           'circulacion': forms.TextInput(attrs={'class': 'form-control', }),
           'expira_circulacion': forms.DateInput(attrs={'class': 'form-control mydatepicker', "data-date-format":'dd/mm/yyyy', "placeholder":"dd/mm/yyyy", }),
-
 
       }
 
@@ -59,8 +56,6 @@ class OperadorForm(forms.ModelForm):
           'medico': forms.TextInput(attrs={'class': 'form-control', }),
           'medico_expira': forms.DateInput(attrs={'class': 'form-control mydatepicker', "data-date-format": 'dd/mm/yyyy', "placeholder": "dd/mm/yyyy", }),
       }
-
-
 
 class Vcamion_Form(forms.ModelForm):
 
@@ -125,7 +120,6 @@ class Repcamion_Form(forms.ModelForm):
           'detecto_fecha': forms.DateTimeInput(attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',"placeholder": "dd/mm/yyyy hh:ii:ss"}),
           'supervisor_fecha': forms.DateTimeInput(attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',"placeholder": "dd/mm/yyyy hh:ii:ss" }),
           'autorizo_fecha': forms.DateTimeInput(attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',"placeholder": "dd/mm/yyyy hh:ii:ss" }),
-
           'estado': forms.CheckboxInput(attrs={'data-on-color':"success", 'data-off-color':"info",'data-off-text':"Iniciada", 'data-on-text':"Terminada"}),
       }
 
@@ -156,11 +150,45 @@ class User_Form(forms.ModelForm):
           'username': forms.TextInput(attrs={'class': 'form-control'}),
           'first_name': forms.TextInput(attrs={'class': 'form-control'}),
           'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-          'email': forms.TextInput(attrs={'class': 'form-control'}),
+          'email': forms.EmailInput(attrs={'class': 'form-control'}),
           'is_staff': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
           'is_active': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
           'is_superuser': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
       }
+
+class Cliente_Form(forms.ModelForm):
+   usuario = forms.CharField(label=u"usuario", required=False, widget=forms.TextInput(
+        attrs={'class': 'form-control','style':'visibility:hidden; position:absolute;'}))
+   class Meta:
+      model = Cliente
+      fields = ['usuario','pais','estado','direccion','cpostal','rfc', \
+                'telefono','contacto','zip','tax','credito','facturacion','descripcion']
+      widgets = {
+          'pais': forms.Select(attrs={'class': 'form-control select2'}),
+          'estado': forms.Select(attrs={'class': 'form-control select2'}),
+          'direccion': forms.TextInput(attrs={'class': 'form-control'}),
+          'cpostal': forms.TextInput(attrs={'class': 'form-control'}),
+          'rfc': forms.TextInput(attrs={'class': 'form-control'}),
+          'telefono': forms.TextInput(attrs={'class': 'form-control', }),
+          'contacto': forms.TextInput(attrs={'class': 'form-control', }),
+          'zip': forms.TextInput(attrs={'class': 'form-control', }),
+          'tax': forms.TextInput(attrs={'class': 'form-control', }),
+          'descripcion': forms.Textarea(attrs={'class': 'form-control','rows':4,'cols':4}),
+          'facturacion': forms.TextInput(attrs={'class': 'form-control'}),
+          'credito': forms.TextInput(attrs={'class': 'form-control'}),
+          }
+
+class Contacto_Cliente_Form(forms.ModelForm):
+
+   class Meta:
+      model = Contactos_Clientes
+      fields = ['contacto','tipo','email','telefono']
+      widgets = {
+          'telefono': forms.TextInput(attrs={'class': 'form-control','required': '' }),
+          'contacto': forms.TextInput(attrs={'class': 'form-control', 'required': '' }),
+          'tipo': forms.Select(attrs={'class': 'form-control', 'required': ''}),
+          'email': forms.EmailInput(attrs={'class': 'form-control', 'required': ''})
+          }
 
 
 class Resgistro_Form(UserCreationForm):
@@ -176,6 +204,36 @@ class Resgistro_Form(UserCreationForm):
     class Meta:
         model = User
         fields = ("username", "email", "password1", "password2")
+
+class Resgistro_User_Cliente_Form(UserCreationForm):
+    email = forms.EmailField(label=u"Correo",widget=forms.EmailInput(
+        attrs={'maxlength': 60, 'class': 'form-control', 'placeholder': _(u"Correo")}))
+    password1 = forms.CharField(label=u"Contraseña", widget=forms.PasswordInput(
+        attrs={'maxlength': 30, 'class': 'form-control', 'placeholder': _(u"Contraseña")}))
+    password2 = forms.CharField(label=u"Confirmar", widget=forms.PasswordInput(
+        attrs={'maxlength': 30, 'class': 'form-control', 'placeholder': _(u"Confirmar contraseña")}))
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2",'first_name','is_active')
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'required': ''}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
+        }
+
+class Update_User_Cliente_Form(UserCreationForm):
+    email = forms.EmailField(label=u"Correo",widget=forms.EmailInput(
+        attrs={'maxlength': 60, 'class': 'form-control', 'placeholder': _(u"Correo")}))
+
+    class Meta:
+        model = User
+        fields = ("username", "email",'first_name','is_active')
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'required': ''}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
+        }
 
 
 class EditPasswordForm(SetPasswordForm):

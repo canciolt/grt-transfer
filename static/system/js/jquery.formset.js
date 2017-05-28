@@ -159,7 +159,7 @@
 
     /* Setup plugin defaults */
     $.fn.formset.defaults = {
-        prefix: 'orden_reparacion_camion_set',                  // The form prefix for your django formset
+        prefix: '',                  // The form prefix for your django formset
         formTemplate: null,              // The jQuery selection cloned to generate new form instances
         addText: 'adicionar',          // Text for the add link
         deleteText: 'eliminar',            // Text for the delete link

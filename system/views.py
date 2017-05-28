@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from logging import Handler
-
+from __builtin__ import isinstance
 from django.views.generic.base import TemplateView
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -77,8 +76,10 @@ class LogoutView(RedirectView):
 
 class Dinamic_Add(SuccessMessageMixin,CreateView):
 
-    models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion,}
-    forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form,}
+    models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
+              "cliente":Cliente}
+    forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
+            "cliente":Cliente_Form}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -103,8 +104,16 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
                 context['orcamion'] = ORepcamion(self.request.POST)
             else:
                 context['orcamion'] = ORepcamion()
+        if self.model == Cliente:
+            CCliente = inlineformset_factory(Cliente, Contactos_Clientes, form=Contacto_Cliente_Form, \
+                                               extra=1, can_delete=True)
+            if self.request.POST:
+                context['ccliente'] = CCliente(self.request.POST)
+                context['usuarioform'] = Resgistro_User_Cliente_Form(self.request.POST)
+            else:
+                context['ccliente'] = CCliente()
+                context['usuarioform'] = Resgistro_User_Cliente_Form()
         return context
-
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -118,14 +127,38 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
                     orcamion.save()
                 else:
                     return super(Dinamic_Add, self).form_invalid(form)
+        if self.model == Cliente:
+            usuario = context['usuarioform']
+            ccliente = context['ccliente']
+            with transaction.atomic():
+                if ccliente.is_valid():
+                    if usuario.is_valid():
+                        user = User.objects.create_user(
+                            username=usuario.cleaned_data['username'],
+                            password=usuario.cleaned_data['password1'],
+                            email=usuario.cleaned_data['email'])
+                        user.first_name = usuario.cleaned_data['first_name']
+                        user.is_active = usuario.cleaned_data['is_active']
+                        user.save()
+                        cliente = form.save(commit=False)
+                        cliente.usuario = user
+                        cliente.save()
+                        ccliente.instance = cliente
+                        ccliente.save()
+                        return HttpResponseRedirect('/list/cliente')
+                    else:
+                        return super(Dinamic_Add, self).form_invalid(form)
+                else:
+                    return super(Dinamic_Add, self).form_invalid(form)
         return super(Dinamic_Add, self).form_valid(form)
+
 
 class Dinamic_Update(SuccessMessageMixin,UpdateView):
 
     models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
-              "usuario":User}
+              "usuario":User,"cliente":Cliente}
     forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
-            "usuario":User_Form}
+            "usuario":User_Form,"cliente":Cliente_Form}
 
 
     @method_decorator(login_required)
@@ -152,6 +185,13 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
                 context['orcamion'] = ORepcamion(self.request.POST,instance=self.object)
             else:
                 context['orcamion'] = ORepcamion(instance=self.object)
+        if self.model == Cliente:
+            CCliente = inlineformset_factory(Cliente, Contactos_Clientes, form=Contacto_Cliente_Form, \
+                                             extra=0, can_delete=True)
+            if self.request.POST:
+                context['ccliente'] = CCliente(self.request.POST,instance=self.object)
+            else:
+                context['ccliente'] = CCliente(instance=self.object)
         return context
 
     def form_valid(self, form):
@@ -163,12 +203,19 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
                     orcamion.save()
                 else:
                     return super(Dinamic_Update, self).form_invalid(form)
+        if self.model == Cliente:
+            ccliente = context['ccliente']
+            with transaction.atomic():
+                if ccliente.is_valid():
+                    ccliente.save()
+                else:
+                    return super(Dinamic_Update, self).form_invalid(form)
         return super(Dinamic_Update, self).form_valid(form)
 
 class Dinamic_List(ListView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario":User}
+              "usuario":User,"cliente":Cliente}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -185,7 +232,7 @@ class Dinamic_List(ListView):
 class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario":User}
+              "usuario":User,"cliente":User}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -210,7 +257,8 @@ class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 
 class Dinamic_Detail(DetailView):
 
-    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion}
+    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
+              "cliente":Cliente}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -229,6 +277,9 @@ class Dinamic_Detail(DetailView):
         if self.model == Reparacion_Camion:
             orepa = Orden_Reparacion_Camion.objects.filter(id=self.object.id)
             context['orepa'] = orepa
+        if self.model == Cliente:
+            ccliente = Contactos_Clientes.objects.filter(cliente=self.object.id)
+            context['ccliente'] = ccliente
         if self.model == Camion:
             ubi = Ubicacion_Camion.objects.filter(camion_id=self.object.id).order_by('-fecha').first()
             repa = Reparacion_Camion.objects.filter(camion_id=self.object.id)
@@ -273,6 +324,11 @@ class Password_View(SuccessMessageMixin,FormView):
         user = get_object_or_404(User, pk=self.kwargs['pk'])
         kwargs['user'] = user
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super(Password_View, self).get_context_data(**kwargs)
+        context['accion'] = 'passwd'
+        return context
 
 
 @login_required

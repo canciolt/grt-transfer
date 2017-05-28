@@ -8,7 +8,7 @@
                                 <div class="panel-body">
                                     <form action="" data-toggle="validator"  method="post">{% csrf_token %}
                                         <div class="form-body">
-                                            <h3 class="box-title">{% if accion == 'update' %}Editar Usuario{% else %}Agregar Usuario{% endif %}</h3>
+                                            <h3 class="box-title">{% if accion == 'update' %}Editar Usuario{% elif accion == 'passwd' %}Cambiar Contraseña{% else %}Agregar Usuario{% endif %}</h3>
                                             <hr>
                                             <div class="row">
                                                 {% for field in form %}

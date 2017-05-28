@@ -88,7 +88,6 @@
                                                                             <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
                                                                         {% endif %}
                                                                         {% endif %}
-
                                                                     </div>
                                                                     </div>
                                                                 {% endif %}
@@ -98,7 +97,6 @@
 
                                          </div>
                                         </div>
-
 
                                         </div>
                                         <div class="form-actions">
@@ -135,7 +133,7 @@
                 $('#id_detecto_fecha').datetimepicker({language:  'es', weekStart: 1, todayBtn:  1, autoclose: 1, todayHighlight: 1, startView: 2, forceParse: 0, showMeridian: 2 });
                 $('#id_supervisor_fecha').datetimepicker({language:  'es', weekStart: 1, todayBtn:  1, autoclose: 1, todayHighlight: 1, startView: 2, forceParse: 0, showMeridian: 2 });
                 $('#id_autorizo_fecha').datetimepicker({language:  'es', weekStart: 1, todayBtn:  1, autoclose: 1, todayHighlight: 1, startView: 2, forceParse: 0, showMeridian: 2 });
-                $('.formset_row').formset();
+                $('.formset_row').formset({prefix:'orden_reparacion_camion_set'});
             });
         </script>
 {% endblock %}
