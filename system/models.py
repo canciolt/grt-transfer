@@ -128,11 +128,11 @@ class Reparacion_Camion(models.Model):
     costo_usd = models.FloatField(verbose_name="costo USD")
     costo_mx = models.FloatField(verbose_name="costo MX")
     estado = models.BooleanField(default=False, verbose_name="estado reparación", help_text="Seleccione el estado (Iniciada-Terminada)")
-    detecto = models.ForeignKey(Operador, verbose_name="Detector de rotura", on_delete=models.PROTECT)
+    detecto = models.ForeignKey(Operador, verbose_name="detector de rotura", on_delete=models.PROTECT)
     detecto_fecha = models.DateTimeField(verbose_name="fecha de detección")
-    supervisor = models.ForeignKey(User, related_name="supervisor_user", verbose_name="Supervisor", on_delete=models.PROTECT)
+    supervisor = models.ForeignKey(User, related_name="supervisor_user", verbose_name="supervisor", on_delete=models.PROTECT)
     supervisor_fecha = models.DateTimeField(verbose_name="fecha de supervición")
-    autorizo = models.ForeignKey(User, related_name="autorizo_user", verbose_name="Autorizo", on_delete=models.PROTECT)
+    autorizo = models.ForeignKey(User, related_name="autorizo_user", verbose_name="autorizo", on_delete=models.PROTECT)
     autorizo_fecha = models.DateTimeField(verbose_name="fecha de autorización")
 
     def __str__(self):
@@ -145,12 +145,12 @@ class Orden_Reparacion_Camion(models.Model):
     id = models.AutoField(primary_key=True)
     reparacion_id = models.ForeignKey(Reparacion_Camion, verbose_name="reparación ID", on_delete=models.CASCADE)
     descripcion = models.CharField(max_length=255, verbose_name="descripcion")
-    tipo = models.CharField(max_length=2, choices=tipo_choices, verbose_name="tipo de Reparacion")
+    tipo = models.CharField(max_length=2, choices=tipo_choices, verbose_name="tipo de reparacion")
     cantidad = models.IntegerField(verbose_name="cantida")
     provedor = models.CharField(max_length=150, verbose_name="provedor")
     factura = models.CharField(max_length=17, verbose_name="factura")
-    costo_r_mx = models.FloatField(verbose_name="Costo MX")
-    costo_r_usd = models.FloatField(verbose_name="Costo US")
+    costo_r_mx = models.FloatField(verbose_name="costo MX")
+    costo_r_usd = models.FloatField(verbose_name="costo US")
     tipo_pago = models.CharField(max_length=2, choices=pago_choices, verbose_name="tipo de pago")
 
     def __str__(self):
@@ -164,8 +164,8 @@ class Multas_Camion(models.Model):
     fecha_multa = models.DateTimeField(verbose_name="fecha de multa")
     numero = models.IntegerField(unique=True, verbose_name="número de multa")
     importe = models.FloatField(verbose_name="importe de multa")
-    descripcion = models.TextField(verbose_name="Motivo de la multa")
-    expira = models.DateField(verbose_name="Vigencia de la Multa")
+    descripcion = models.TextField(verbose_name="motivo de la multa")
+    expira = models.DateField(verbose_name="vigencia de la Multa")
     grua = models.CharField(max_length=25, blank=True, verbose_name="grua")
     importe_grua = models.FloatField(default=0, verbose_name="importe de grua")
     estado = models.BooleanField(default=0, choices=estado_multa, verbose_name="estado de la multa")
@@ -182,10 +182,11 @@ def get_pais():
     return choice
 
 class Cliente(models.Model):
+    id = models.AutoField(primary_key=True)
     usuario = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
     pais = models.CharField(choices=get_pais(),max_length=20, verbose_name="país")
     estado = models.CharField(max_length=20, verbose_name="estado")
-    direccion = models.CharField(max_length=50, verbose_name="dirección")
+    direccion = models.CharField(max_length=70, verbose_name="dirección")
     cpostal = models.CharField(max_length=7, verbose_name="código postal")
     rfc = models.CharField(max_length=15, verbose_name="rfc")
     telefono = models.CharField(max_length=10, verbose_name="teléfono")
@@ -203,6 +204,7 @@ class Cliente(models.Model):
 class Contactos_Clientes(models.Model):
     tipo_choices = (("IMP", "Importación"), ("EXP", "Exportación"), \
                     ("FACMX", "Facturación MX"), ("FACUS", "Facturación US"))
+    id = models.AutoField(primary_key=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     contacto = models.CharField(max_length=50, verbose_name="contacto")
     tipo = models.CharField(choices=tipo_choices, max_length=20, verbose_name="tipo")
@@ -211,6 +213,90 @@ class Contactos_Clientes(models.Model):
 
     def __str__(self):
         return self.numero
+
+class Consignatario(models.Model):
+    id = models.AutoField(primary_key=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    consignatario = models.CharField(max_length=70, verbose_name="consignatario")
+    ejecutivo = models.CharField(max_length=50, verbose_name="ejecutivo")
+    email = models.EmailField(verbose_name="correo")
+
+    def __str__(self):
+        return self.consignatario
+
+class Servicio(models.Model):
+    tipo_choices = (("T", "Trompo"), ("TUS", "Trompo US"), ("TMX", "Trompo MX"), ("R", "Repartos"),
+                    ("ML", "Movimiento local"), ("MLMX", "Movimiento local MX"), ("MLUS", "Movimiento local US"), \
+                    ("MLR", "Movimiento local Rampa"), ("EXP", "Exportación"), ("EXPV", "Exportación vacia"), ("IMP", "Importación"), \
+                    ("IMPV", "Importación vacia"), ("MP", "Movimiento de patio"), ("MP", "Movimiento de inspección"),("CF", "Cruze en falso"))
+    aduana_choices = (("LRD-240", "Laredo-240"), ("COL-800", "Colombia-800"))
+    remolque_choices = (("NO", "No aplica"), ("CS", "Caja seca"), ("CSE", "Caja seca Esp."), ("CSV", "aja seca vacia"), \
+                        ("CSH", "Caja seca Hazmat"), ("C", "Contenedor"), ("P", "Plataforma"), ("PE", "Plataforma Esp."), \
+                        ("SL", "Semi Lowboy"), ("L", "Lowboy"), ("PP", "Poppies"), ("R", "Refrigerada"), ("PA", "Pipa"))
+    id = models.AutoField(primary_key=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    tipo = models.CharField(choices=tipo_choices, max_length=70, verbose_name="tipo de servicio")
+    aduana = models.CharField(choices=aduana_choices, max_length=50, verbose_name="aduana")
+    remolque = models.CharField(choices=remolque_choices, max_length=50, verbose_name="remolque")
+    importemx = models.FloatField(verbose_name="importe MX")
+    importeusd = models.FloatField(verbose_name="importe USD")
+
+    def __str__(self):
+        return self.servicio
+
+class Patio(models.Model):
+    id = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=50, verbose_name="nombre")
+    direccion = models.CharField(max_length=70, verbose_name="dirección")
+    pais = models.CharField(choices=get_pais(), max_length=20, verbose_name="país")
+    linea = models.CharField(max_length=50, verbose_name="linea")
+    telefono = models.CharField(max_length=20, verbose_name="telefono")
+    contacto = models.CharField(max_length=50, verbose_name="contacto")
+    observaciones = models.TextField(verbose_name="observaciones")
+    latitud = models.CharField(max_length=50, verbose_name="latitud")
+    longitud = models.CharField(max_length=50, verbose_name="longitud")
+
+    def __str__(self):
+        return self.nombre
+
+class Caja(models.Model):
+    id = models.AutoField(primary_key=True)
+    numero = models.CharField(max_length=20, verbose_name="numero")
+    tipo = models.CharField(max_length=20, verbose_name="tipo")
+    fecha_entrada = models.DateTimeField(verbose_name="fecha de entrada")
+    fecha_salida = models.DateTimeField(verbose_name="fecha de salida")
+    observaciones = models.TextField(verbose_name="observaciones")
+
+    def __str__(self):
+        return self.numero
+
+class Operacion(models.Model):
+    id = models.AutoField(primary_key=True)
+    servicio = models.CharField(max_length=50, verbose_name="servicio")
+    fecha = models.DateTimeField(verbose_name="fecha")
+    camion = models.ForeignKey(Camion, on_delete=models.PROTECT)
+    operador = models.ForeignKey(Operador, on_delete=models.PROTECT)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
+    caja = models.ForeignKey(Caja, on_delete=models.PROTECT)
+    consignatario = models.CharField(max_length=50, verbose_name="consignatario")
+    origen = models.CharField(max_length=50, verbose_name="origen")
+    destino = models.CharField(max_length=50, verbose_name="destino")
+    sellos = models.CharField(max_length=50, verbose_name="sellos")
+    aduana = models.CharField(max_length=50, verbose_name="aduana")
+    # Informe bien sobre los datos de las operaciones
+
+
+
+
+class Tasa_Cambio(models.Model):
+    id = models.AutoField(primary_key=True)
+    fecha = models.DateTimeField(unique=True)
+    tasa = models.FloatField(verbose_name="tasa de cambio")
+
+    def __str__(self):
+        return self.tasa
+
+
 
 class Flujo_Trabajo(models.Model):
     id = models.AutoField(primary_key=True)

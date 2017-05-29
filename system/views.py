@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
-from __builtin__ import isinstance
 from django.views.generic.base import TemplateView
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib.auth import login as auth_login
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import FormView, RedirectView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponseRedirect
-from django.views.generic import CreateView, UpdateView, ListView, DeleteView, DetailView
+from django.views.generic import CreateView, UpdateView, ListView, DeleteView, DetailView, FormView
 from django.http import Http404
 from system.forms import *
 from system.models import *
@@ -63,15 +60,6 @@ class LoginView(FormView):
         else:
             redirect_to = "/"
         return redirect_to
-
-
-class LogoutView(RedirectView):
-
-    url = '/login'
-
-    def get(self, request, *args, **kwargs):
-        auth_logout(request)
-        return super(LogoutView, self).get(request, *args, **kwargs)
 
 
 class Dinamic_Add(SuccessMessageMixin,CreateView):
