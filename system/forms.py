@@ -76,7 +76,7 @@ class Icamion_Form(forms.ModelForm):
       widgets = {
           'camion_id': forms.TextInput(attrs={'style':'visibility:hidden; position:absolute;'}),
           'inspeccion': forms.TextInput(attrs={'class': 'form-control', }),
-          'expira': forms.DateInput(attrs={'class': 'form-control mydatepicker', "data-date-format": 'dd/mm/yyyy',"placeholder": "dd/mm/yyyy", }),
+          'expira': forms.DateInput(attrs={'class': 'form-control mydatepicker', "data-date-format": 'dd/mm/yyyy',"placeholder": "dd/mm/yyyy",}),
       }
 
 class SMXcamion_Form(forms.ModelForm):

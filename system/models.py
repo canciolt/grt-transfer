@@ -199,7 +199,7 @@ class Cliente(models.Model):
 
 
     def __str__(self):
-        return self.numero
+        return self.usuario
 
 class Contactos_Clientes(models.Model):
     tipo_choices = (("IMP", "Importación"), ("EXP", "Exportación"), \
@@ -228,7 +228,8 @@ class Servicio(models.Model):
     tipo_choices = (("T", "Trompo"), ("TUS", "Trompo US"), ("TMX", "Trompo MX"), ("R", "Repartos"),
                     ("ML", "Movimiento local"), ("MLMX", "Movimiento local MX"), ("MLUS", "Movimiento local US"), \
                     ("MLR", "Movimiento local Rampa"), ("EXP", "Exportación"), ("EXPV", "Exportación vacia"), ("IMP", "Importación"), \
-                    ("IMPV", "Importación vacia"), ("MP", "Movimiento de patio"), ("MP", "Movimiento de inspección"),("CF", "Cruze en falso"))
+                    ("IMPV", "Importación vacia"), ("MP", "Movimiento de patio"), ("MPUS", "Movimiento de patio US"),("MPMX", "Movimiento de patio MX"), \
+                    ("MP", "Movimiento de inspección"),("CF", "Cruze en falso"), ("CFMX", "Cruze en falso MX"), ("CFUS", "Cruze en falso US"))
     aduana_choices = (("LRD-240", "Laredo-240"), ("COL-800", "Colombia-800"))
     remolque_choices = (("NO", "No aplica"), ("CS", "Caja seca"), ("CSE", "Caja seca Esp."), ("CSV", "aja seca vacia"), \
                         ("CSH", "Caja seca Hazmat"), ("C", "Contenedor"), ("P", "Plataforma"), ("PE", "Plataforma Esp."), \
@@ -236,6 +237,7 @@ class Servicio(models.Model):
     id = models.AutoField(primary_key=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     tipo = models.CharField(choices=tipo_choices, max_length=70, verbose_name="tipo de servicio")
+    dsemana = models.CharField(max_length=7, verbose_name="días de la semana")
     aduana = models.CharField(choices=aduana_choices, max_length=50, verbose_name="aduana")
     remolque = models.CharField(choices=remolque_choices, max_length=50, verbose_name="remolque")
     importemx = models.FloatField(verbose_name="importe MX")
@@ -261,8 +263,8 @@ class Patio(models.Model):
 
 class Caja(models.Model):
     id = models.AutoField(primary_key=True)
-    numero = models.CharField(max_length=20, verbose_name="numero")
-    tipo = models.CharField(max_length=20, verbose_name="tipo")
+    numero = models.CharField(max_length=20, unique=True, verbose_name="numero")
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha_entrada = models.DateTimeField(verbose_name="fecha de entrada")
     fecha_salida = models.DateTimeField(verbose_name="fecha de salida")
     observaciones = models.TextField(verbose_name="observaciones")
@@ -272,20 +274,22 @@ class Caja(models.Model):
 
 class Operacion(models.Model):
     id = models.AutoField(primary_key=True)
-    servicio = models.CharField(max_length=50, verbose_name="servicio")
+    servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, verbose_name="servicio")
     fecha = models.DateTimeField(verbose_name="fecha")
-    camion = models.ForeignKey(Camion, on_delete=models.PROTECT)
-    operador = models.ForeignKey(Operador, on_delete=models.PROTECT)
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
-    caja = models.ForeignKey(Caja, on_delete=models.PROTECT)
-    consignatario = models.CharField(max_length=50, verbose_name="consignatario")
+    camion = models.ForeignKey(Camion, on_delete=models.PROTECT, verbose_name="camion")
+    operador = models.ForeignKey(Operador, on_delete=models.PROTECT, verbose_name="operador")
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, verbose_name="cliente")
+    caja = models.ForeignKey(Caja, on_delete=models.PROTECT, verbose_name="caja")
+    consignatario = models.ForeignKey(Consignatario, verbose_name="consignatario")
     origen = models.CharField(max_length=50, verbose_name="origen")
     destino = models.CharField(max_length=50, verbose_name="destino")
     sellos = models.CharField(max_length=50, verbose_name="sellos")
-    aduana = models.CharField(max_length=50, verbose_name="aduana")
-    # Informe bien sobre los datos de las operaciones
+    estado = models.CharField(max_length=20, verbose_name="estado operación")
+    referencia = models.CharField(max_length=15, verbose_name="referencia")
+    pedimento = models.CharField(max_length=15, verbose_name="pedimento")
 
-
+    def __str__(self):
+        return self.id
 
 
 class Tasa_Cambio(models.Model):
@@ -295,8 +299,6 @@ class Tasa_Cambio(models.Model):
 
     def __str__(self):
         return self.tasa
-
-
 
 class Flujo_Trabajo(models.Model):
     id = models.AutoField(primary_key=True)

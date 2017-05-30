@@ -25,7 +25,6 @@ from django.shortcuts import get_object_or_404
 
 
 
-
 @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')
 class IndexView(TemplateView):
