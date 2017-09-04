@@ -10,7 +10,7 @@
                                 <div class="panel-body">
                                     <form action="" data-toggle="validator"  method="post">{% csrf_token %}
                                         <div class="form-body">
-                                            <h3 class="box-title">{% if accion == 'update' %}Editar Cliente{% else %}Agregar Cliente{% endif %}</h3>
+                                            <h3 class="box-title">{% if accion == 'update' %}Editar Consignatario{% else %}Agregar Consignatario{% endif %}<span class="pull-right">Cliente: {{ cliente.usuario.first_name }}</span></h3>
                                             <hr>
                                             <div class="row">
                                                 {% for field in usuarioform %}
@@ -31,19 +31,15 @@
                                                     </div>
                                                 {% endfor %}
                                                 {% for field in form %}
-                                                    {% if field.name == "usuario" %}
-                                                        {{ field }}
+                                                    {% if field.name == "cliente" %}
+                                                        <select name="cliente" required="" id="id_cliente" style="visibility: hidden; position: absolute">
+                                                          <option selected value="{{ cliente.id }}">{{ cliente.usuario.first_name }}</option>
+                                                        </select>
                                                     {% else %}
                                                     <div class="col-md-6 {{ field.name }}">
                                                     <div class="form-group">
                                                         <label class="control-label">{{ field.label_tag }}</label>
-                                                        {% if field.name == "estado" and accion == 'update' %}
-                                                            <select name="estado" required="" class="form-control select2" id="id_estado">
-                                                              <option value="{{ field.value }}" selected="">{{ field.value }}</option>
-                                                            </select>
-                                                        {% else %}
                                                         {{ field }}
-                                                        {% endif %}
                                                         {% if field.errors %}
                                                             {% for f in field.errors%}
                                                                 <span class="alert-block"><small>{{ f|safe }}</small></span>
@@ -60,50 +56,13 @@
                                             </div>
 
                                         </div>
-                                     <h3 class="box-title">Contactos</h3>
+                                     <h3 class="box-title">Ejecutivos</h3>
                                         <hr class="m-t-0 m-b-40">
                                         <div data-role="dynamic-fields">
                                             <div class="row auto-fields">
-                                                    {{ ccliente.management_form }}
-                                                    {% for form in ccliente.forms %}
+                                                    {{ econsignatario.management_form }}
+                                                    {% for form in econsignatario.forms %}
                                                     <div class="{% cycle 'row1' 'row2' %} formset_row row" style="width: 100%">
-                                                                {% for field in form.visible_fields %}
-                                                                {% if field.name == "DELETE" %}
-                                                                {% else %}
-                                                                <div class="col-md-3">
-                                                                    <div class="form-group">
-                                                                        {% if forloop.first %}
-                                                                                {% for hidden in form.hidden_fields %}
-                                                                                    {{ hidden }}
-                                                                                {% endfor %}
-                                                                        {% endif %}
-                                                                         <label class="control-label">{{ field.label_tag }}</label>
-                                                                        {{ field }}
-                                                                        {% if field.errors %}
-                                                                            {% for f in field.errors%}
-                                                                                <span class="alert-block"><small>{{ f|safe }}</small></span>
-                                                                            {% endfor %}
-                                                                        {% else %}
-                                                                           {% if field.help_text %}
-                                                                            <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                                                                        {% endif %}
-                                                                        {% endif %}
-                                                                    </div>
-                                                                    </div>
-                                                                {% endif %}
-                                                                {% endfor %}
-                                                    </div>
-                                                    {% endfor %}
-
-                                         </div>
-                                        </div>
-                                    <h3 class="box-title">Despachadores</h3>
-                                        <hr class="m-t-0 m-b-40">
-                                        <div data-role="dynamic-fields">
-                                            <div class="row auto-fields">
-                                                    {{ dcliente.management_form }}
-                                                    {% for form in dcliente.forms %}
-                                                    <div class="{% cycle 'row1' 'row2' %} formset_row2 row" style="width: 100%">
                                                                 {% for field in form.visible_fields %}
                                                                 {% if field.name == "DELETE" %}
                                                                 {% else %}
@@ -163,22 +122,9 @@
     <script>
             jQuery(document).ready(function () {
                 // Switch
-                $('.formset_row').formset({prefix:'contactos_clientes_set'});
-                $('.formset_row2').formset({prefix:'despachador_cliente_set'});
+                $('.formset_row').formset({prefix:'ejecutivo_consignatario_set'});
                 $('#id_username').blur();
                 var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
-                $( "#id_pais" ).change(function() {
-                    $('div.estado').block({
-                                    message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
-                                        border: '1px solid #fff'}});
-                    ajaxPost('/ajax/cliente/estados/',{"pais":$("#id_pais").val()}, function(content){
-                        $('#id_estado').html('');
-                        $.each(content, function(i, item) {
-                        $("<option value='" +item[1]+ "'>" +item[1]+ "</option>").appendTo("#id_estado");
-                    });
-                    })
-                    $('div.estado').unblock();
-                });
                 $('.js-switch').each(function () {
                     new Switchery($(this)[0], $(this).data());
                 });

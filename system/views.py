@@ -64,9 +64,9 @@ class LoginView(FormView):
 class Dinamic_Add(SuccessMessageMixin,CreateView):
 
     models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
-              "cliente":Cliente}
+              "cliente":Cliente, "consignatario":Consignatario, "patio":Patio}
     forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
-            "cliente":Cliente_Form}
+            "cliente":Cliente_Form, "consignatario":Consignatario_Form, "patio":Patio_Form}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -92,14 +92,31 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
             else:
                 context['orcamion'] = ORepcamion()
         if self.model == Cliente:
-            CCliente = inlineformset_factory(Cliente, Contactos_Clientes, form=Contacto_Cliente_Form, \
+            CCliente = inlineformset_factory(Cliente, Contactos_Cliente, form=Contacto_Cliente_Form, \
+                                               extra=1, can_delete=True)
+            DCliente = inlineformset_factory(Cliente, Despachador_Cliente, form=Despachador_Cliente_Form, \
                                                extra=1, can_delete=True)
             if self.request.POST:
                 context['ccliente'] = CCliente(self.request.POST)
+                context['dcliente'] = DCliente(self.request.POST)
                 context['usuarioform'] = Resgistro_User_Cliente_Form(self.request.POST)
             else:
                 context['ccliente'] = CCliente()
+                context['dcliente'] = DCliente()
                 context['usuarioform'] = Resgistro_User_Cliente_Form()
+        if self.model == Consignatario:
+            try:
+                context['cliente'] = get_object_or_404(Cliente, pk=self.kwargs['pk'])
+                EConsignatario = inlineformset_factory(Consignatario, Ejecutivo_Consignatario, form=Ejecutivo_Consignatario_Form, \
+                                                 extra=1, can_delete=True)
+                if self.request.POST:
+                    context['econsignatario'] = EConsignatario(self.request.POST)
+                    context['usuarioform'] = Resgistro_User_Cliente_Form(self.request.POST)
+                else:
+                    context['econsignatario'] = EConsignatario()
+                    context['usuarioform'] = Resgistro_User_Cliente_Form()
+            except KeyError:
+                raise Http404
         return context
 
     def form_valid(self, form):
@@ -117,8 +134,9 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
         if self.model == Cliente:
             usuario = context['usuarioform']
             ccliente = context['ccliente']
+            dcliente = context['dcliente']
             with transaction.atomic():
-                if ccliente.is_valid():
+                if ccliente.is_valid() and dcliente.is_valid():
                     if usuario.is_valid():
                         user = User.objects.create_user(
                             username=usuario.cleaned_data['username'],
@@ -132,6 +150,32 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
                         cliente.save()
                         ccliente.instance = cliente
                         ccliente.save()
+                        dcliente.instance = cliente
+                        dcliente.save()
+                        return HttpResponseRedirect('/list/cliente')
+                    else:
+                        return super(Dinamic_Add, self).form_invalid(form)
+                else:
+                    return super(Dinamic_Add, self).form_invalid(form)
+        if self.model == Consignatario:
+            usuario = context['usuarioform']
+            econsignatario = context['econsignatario']
+            cliente = context['cliente']
+            with transaction.atomic():
+                if econsignatario.is_valid():
+                    if usuario.is_valid():
+                        user = User.objects.create_user(
+                            username=usuario.cleaned_data['username'],
+                            password=usuario.cleaned_data['password1'],
+                            email=usuario.cleaned_data['email'])
+                        user.first_name = usuario.cleaned_data['first_name']
+                        user.is_active = usuario.cleaned_data['is_active']
+                        user.save()
+                        consignatario = form.save(commit=False)
+                        consignatario.usuario = user
+                        consignatario.save()
+                        econsignatario.instance = consignatario
+                        econsignatario.save()
                         return HttpResponseRedirect('/list/cliente')
                     else:
                         return super(Dinamic_Add, self).form_invalid(form)
@@ -143,9 +187,10 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
 class Dinamic_Update(SuccessMessageMixin,UpdateView):
 
     models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
-              "usuario":User,"cliente":Cliente}
+              "usuario":User,"cliente":Cliente, "consignatario":Consignatario, "patio":Patio}
     forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
-            "usuario":User_Form,"cliente":Cliente_Form}
+            "usuario":User_Form,"cliente":Cliente_Form, "consignatario":Consignatario_Form,\
+            "patio":Patio_Form}
 
 
     @method_decorator(login_required)
@@ -173,13 +218,26 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
             else:
                 context['orcamion'] = ORepcamion(instance=self.object)
         if self.model == Cliente:
-            CCliente = inlineformset_factory(Cliente, Contactos_Clientes, form=Contacto_Cliente_Form, \
+            CCliente = inlineformset_factory(Cliente, Contactos_Cliente, form=Contacto_Cliente_Form, \
+                                             extra=0, can_delete=True)
+            DCliente = inlineformset_factory(Cliente, Despachador_Cliente, form=Despachador_Cliente_Form, \
                                              extra=0, can_delete=True)
             if self.request.POST:
                 context['ccliente'] = CCliente(self.request.POST,instance=self.object)
+                context['dcliente'] = DCliente(self.request.POST, instance=self.object)
             else:
                 context['ccliente'] = CCliente(instance=self.object)
+                context['dcliente'] = DCliente(instance=self.object)
+        if self.model == Consignatario:
+            context['cliente'] = get_object_or_404(Cliente, pk=self.object.cliente.id)
+            EConsignatario = inlineformset_factory(Consignatario, Ejecutivo_Consignatario, form=Ejecutivo_Consignatario_Form, \
+                                                   extra=0, can_delete=True)
+            if self.request.POST:
+                context['econsignatario'] = EConsignatario(self.request.POST,instance=self.object)
+            else:
+                context['econsignatario'] = EConsignatario(instance=self.object)
         return context
+
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -192,9 +250,19 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
                     return super(Dinamic_Update, self).form_invalid(form)
         if self.model == Cliente:
             ccliente = context['ccliente']
+            dcliente = context['dcliente']
             with transaction.atomic():
-                if ccliente.is_valid():
+                if ccliente.is_valid() and dcliente.is_valid():
                     ccliente.save()
+                    dcliente.save()
+                else:
+                    return super(Dinamic_Update, self).form_invalid(form)
+        if self.model == Consignatario:
+            EConsignatario = context['econsignatario']
+            with transaction.atomic():
+                if EConsignatario.is_valid():
+                    EConsignatario.save()
+                    self.success_url = "/detail/cliente/"+str(self.object.cliente.id)
                 else:
                     return super(Dinamic_Update, self).form_invalid(form)
         return super(Dinamic_Update, self).form_valid(form)
@@ -202,7 +270,7 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
 class Dinamic_List(ListView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario":User,"cliente":Cliente}
+              "usuario":User,"cliente":Cliente,"patio":Patio}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -219,7 +287,7 @@ class Dinamic_List(ListView):
 class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario":User,"cliente":User}
+              "usuario":User,"cliente":Cliente, "consignatario":Consignatario, "patio":Patio}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -236,6 +304,9 @@ class Dinamic_Delete(SuccessMessageMixin,DeleteView):
         return super(Dinamic_Delete, self).dispatch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
+        if self.model == Consignatario:
+            cliente = get_object_or_404(Consignatario,pk=kwargs['pk']).cliente
+            self.success_url = "/detail/cliente/" + str(cliente.id)
         try:
             return super(Dinamic_Delete, self).delete(request, *args, **kwargs)
         except models.ProtectedError:
@@ -245,7 +316,7 @@ class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 class Dinamic_Detail(DetailView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "cliente":Cliente}
+              "cliente":Cliente, "patio":Patio}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -265,8 +336,12 @@ class Dinamic_Detail(DetailView):
             orepa = Orden_Reparacion_Camion.objects.filter(id=self.object.id)
             context['orepa'] = orepa
         if self.model == Cliente:
-            ccliente = Contactos_Clientes.objects.filter(cliente=self.object.id)
+            ccliente = Contactos_Cliente.objects.filter(cliente=self.object.id)
+            consignatarios = Consignatario.objects.filter(cliente=self.object.id)
+            despachadores = Despachador_Cliente.objects.filter(cliente=self.object.id)
             context['ccliente'] = ccliente
+            context['consignatarios'] = consignatarios
+            context['despachadores'] = despachadores
         if self.model == Camion:
             ubi = Ubicacion_Camion.objects.filter(camion_id=self.object.id).order_by('-fecha').first()
             repa = Reparacion_Camion.objects.filter(camion_id=self.object.id)
@@ -278,7 +353,6 @@ class Dinamic_Detail(DetailView):
             context['ubi'] = ubi
             context['si'] = {"smx":smx,"sus":sus,"ins":ins,"ver":ver}
         return context
-
 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')

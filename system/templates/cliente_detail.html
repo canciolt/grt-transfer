@@ -37,7 +37,7 @@
                                                     <div class="form-group">
                                                         <label class="control-label col-md-3">País:</label>
                                                         <div class="col-md-9">
-                                                            <p class="form-control-static"> {{ object.pais }} </p>
+                                                            <p class="form-control-static"> {{ object.get_pais_display }} </p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -76,26 +76,6 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label class="control-label col-md-3">Contacto:</label>
-                                                        <div class="col-md-9">
-                                                            <p class="form-control-static">  {{ object.contacto }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!--/span-->
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label class="control-label col-md-3">Telefono:</label>
-                                                        <div class="col-md-9">
-                                                            <p class="form-control-static">{{ object.telefono }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!--/span-->
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
                                                         <label class="control-label col-md-3">RFC:</label>
                                                         <div class="col-md-9">
                                                             <p class="form-control-static">  {{ object.rfc }}</p>
@@ -105,9 +85,9 @@
                                                 <!--/span-->
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label class="control-label col-md-3">ZIP:</label>
+                                                        <label class="control-label col-md-3">Telefono:</label>
                                                         <div class="col-md-9">
-                                                            <p class="form-control-static">{{ object.zip }}</p>
+                                                            <p class="form-control-static">{{ object.telefono }}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -170,9 +150,62 @@
                                                        {% for f in ccliente %}
                                                         <tr>
                                                             <td class="text-center">{{ f.contacto }}</td>
-                                                            <td class="text-center">{{ f.tipo }}</td>
+                                                            <td class="text-center">{{ f.get_tipo_display }}</td>
                                                             <td class="text-center">{{ f.telefono }}</td>
                                                             <td class="text-center">{{ f.email }}</td>
+                                                        </tr>
+                                                       {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="table-responsive m-t-40" style="clear: both;">
+                                                <h3 class="box-title m-b-0">Despachadores</h3>
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center">Nombre</th>
+                                                            <th class="text-center">Radio</th>
+                                                            <th class="text-center">Telefono</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                       {% for f in despachadores %}
+                                                        <tr>
+                                                            <td class="text-center">{{ f.nombre }}</td>
+                                                            <td class="text-center">{{ f.radio }}</td>
+                                                            <td class="text-center">{{ f.telefono }}</td>
+                                                        </tr>
+                                                       {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="table-responsive m-t-40" style="clear: both;">
+                                                <h3 class="box-title m-b-0">Consignatarios</h3>
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center">Nombre</th>
+                                                            <th class="text-center">Usuario</th>
+                                                            <th class="text-center">Correo</th>
+                                                            <th class="text-center">Opciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                       {% for f in consignatarios %}
+                                                        <tr>
+                                                            <td class="text-center">{{ f.usuario.first_name }}</td>
+                                                            <td class="text-center">{{ f.usuario }}</td>
+                                                            <td class="text-center">{{ f.usuario.email }}</td>
+                                                            <td class="text-center">
+                                                                <a href="/update/consignatario/{{ f.id }}" data-toggle="tooltip" data-original-title="Editar"> <i class="fa fa-pencil text-inverse m-r-10"></i> </a>
+                                                                <a href="/delete/consignatario/{{ f.id }}" data-toggle="tooltip" data-original-title="Eliminar"> <i class="fa fa-close text-danger"></i> </a>
+
+                                                            </td>
                                                         </tr>
                                                        {% endfor %}
                                                     </tbody>

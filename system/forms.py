@@ -117,6 +117,7 @@ class Repcamion_Form(forms.ModelForm):
           'costo_mx': forms.TextInput(attrs={'class': 'form-control'}),
           'detecto': forms.Select(attrs={'class': 'form-control select2'}),
           'supervisor': forms.Select(attrs={'class': 'form-control select2'}),
+          'autorizo': forms.Select(attrs={'class': 'form-control select2'}),
           'detecto_fecha': forms.DateTimeInput(attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',"placeholder": "dd/mm/yyyy hh:ii:ss"}),
           'supervisor_fecha': forms.DateTimeInput(attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',"placeholder": "dd/mm/yyyy hh:ii:ss" }),
           'autorizo_fecha': forms.DateTimeInput(attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',"placeholder": "dd/mm/yyyy hh:ii:ss" }),
@@ -162,7 +163,7 @@ class Cliente_Form(forms.ModelForm):
    class Meta:
       model = Cliente
       fields = ['usuario','pais','estado','direccion','cpostal','rfc', \
-                'telefono','contacto','zip','tax','credito','facturacion','descripcion']
+                'telefono','tax','credito','facturacion','descripcion']
       widgets = {
           'pais': forms.Select(attrs={'class': 'form-control select2'}),
           'estado': forms.Select(attrs={'class': 'form-control select2'}),
@@ -170,8 +171,6 @@ class Cliente_Form(forms.ModelForm):
           'cpostal': forms.TextInput(attrs={'class': 'form-control'}),
           'rfc': forms.TextInput(attrs={'class': 'form-control'}),
           'telefono': forms.TextInput(attrs={'class': 'form-control', }),
-          'contacto': forms.TextInput(attrs={'class': 'form-control', }),
-          'zip': forms.TextInput(attrs={'class': 'form-control', }),
           'tax': forms.TextInput(attrs={'class': 'form-control', }),
           'descripcion': forms.Textarea(attrs={'class': 'form-control','rows':4,'cols':4}),
           'facturacion': forms.TextInput(attrs={'class': 'form-control'}),
@@ -181,7 +180,7 @@ class Cliente_Form(forms.ModelForm):
 class Contacto_Cliente_Form(forms.ModelForm):
 
    class Meta:
-      model = Contactos_Clientes
+      model = Contactos_Cliente
       fields = ['contacto','tipo','email','telefono']
       widgets = {
           'telefono': forms.TextInput(attrs={'class': 'form-control','required': '' }),
@@ -190,6 +189,50 @@ class Contacto_Cliente_Form(forms.ModelForm):
           'email': forms.EmailInput(attrs={'class': 'form-control', 'required': ''})
           }
 
+class Despachador_Cliente_Form(forms.ModelForm):
+
+   class Meta:
+      model = Despachador_Cliente
+      fields = ['nombre','radio','telefono']
+      widgets = {
+          'telefono': forms.TextInput(attrs={'class': 'form-control','required': '' }),
+          'radio': forms.TextInput(attrs={'class': 'form-control'}),
+          'nombre': forms.TextInput(attrs={'class': 'form-control', 'required': '' }),
+          }
+
+class Consignatario_Form(forms.ModelForm):
+
+    class Meta:
+      model = Consignatario
+      fields = ['cliente']
+
+class Ejecutivo_Consignatario_Form(forms.ModelForm):
+
+   class Meta:
+      model = Ejecutivo_Consignatario
+      fields = ['nombre','email','telefono']
+      widgets = {
+          'nombre': forms.TextInput(attrs={'class': 'form-control', 'required': ''}),
+          'email': forms.EmailInput(attrs={'class': 'form-control', 'required': ''}),
+          'telefono': forms.TextInput(attrs={'class': 'form-control','required': '' }),
+          }
+class Patio_Form(forms.ModelForm):
+
+   class Meta:
+      model = Patio
+      fields = ['nombre','direccion','pais','linea','telefono','contacto',\
+                'latitud','longitud','observaciones']
+      widgets = {
+          'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+          'direccion': forms.TextInput(attrs={'class': 'form-control'}),
+          'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+          'pais': forms.Select(attrs={'class': 'form-control select2'}),
+          'linea': forms.TextInput(attrs={'class': 'form-control'}),
+          'contacto': forms.TextInput(attrs={'class': 'form-control'}),
+          'latitud': forms.TextInput(attrs={'class': 'form-control'}),
+          'longitud': forms.TextInput(attrs={'class': 'form-control'}),
+          'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'cols': 4}),
+          }
 
 class Resgistro_Form(UserCreationForm):
     username = forms.RegexField(label=u"Usuario",regex=r'^[a-z\d_]{4,15}$', widget=forms.TextInput(

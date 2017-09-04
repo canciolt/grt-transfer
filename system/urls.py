@@ -16,7 +16,7 @@ urlpatterns = [
    url(r'^delete/(?P<model>\w+)/(?P<pk>[\d+]+)$', Dinamic_Delete.as_view(), name='delete'),
    url(r'^detail/(?P<model>\w+)/(?P<pk>[\d+]+)$', Dinamic_Detail.as_view(), name='view'),
    url(r'^add/camion/(?P<model>\w+)/(?P<pk>[\d+]+)$', Add_Exta_Camion, name='add-camionextra'),
-
+   url(r'^add/(?P<model>\w+)/(?P<pk>[\d+]+)$', Dinamic_Add.as_view(), name='add-consignatario'),
    # Ajax URL
    url(r'^ajax/cliente/estados/$', prueba, name='ajax-estados'),
 ]

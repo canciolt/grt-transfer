@@ -3,9 +3,15 @@ from __future__ import unicode_literals
 from django.db import models
 from  django.contrib.auth.models import User, AbstractUser
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.core.validators import RegexValidator
 import json
 import os
 
+telefono_regex = RegexValidator(regex=r'^\+?1?\d{10}$',message='Número de telefono invalido.')
+cpostal_regex = RegexValidator(regex=r'^\+?1?\d{4,5}$', message='Código postal invalido.')
+rfc_regex = RegexValidator(regex=r'^([A-ZÑ&]{3,4}) ?(?:- ?)?(\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])) ?(?:- ?)?([A-Z\d]{2})([A\d])$', message='Código RFC invalido')
+lat_lon_regex = RegexValidator(regex=r'^-?([1-9]?[1-9]|[1-9]0)\.{1}\d{1,6}$', message='Coordenada invalida')
 
 class Camion(models.Model):
     tipo_choices = (("0", "Libre"), ("1", "Ocupado"),("2", "Arrendado"))
@@ -21,7 +27,6 @@ class Camion(models.Model):
     estado = models.CharField(max_length=2,choices=tipo_choices, default=0, verbose_name="estado")
     circulacion = models.CharField(max_length=20, verbose_name="circulación")
     expira_circulacion = models.DateField(verbose_name="vencimiento de circulación")
-
 
     class Meta:
         verbose_name = "Camion"
@@ -101,7 +106,7 @@ class Operador(models.Model):
     telefono = models.CharField(blank=True, max_length=10, verbose_name="teléfono")
     radio = models.CharField(blank=True, max_length=12, verbose_name="radio")
     celular = models.CharField(blank=True, max_length=10, verbose_name="celular")
-    camion = models.ForeignKey(Camion, null=True, on_delete=models.SET_NULL)
+    camion = models.ForeignKey(Camion, null=True, on_delete=models.PROTECT)
     estado = models.BooleanField(default=False, verbose_name="estado", help_text="Seleccione estado (Libre-Ocupado)")
     nss = models.CharField(max_length=30, verbose_name="seguro social")
     curp = models.CharField(max_length=30, verbose_name="CURP")
@@ -183,32 +188,35 @@ def get_pais():
 
 class Cliente(models.Model):
     id = models.AutoField(primary_key=True)
-    usuario = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
+    usuario = models.OneToOneField(User, unique=True, on_delete=models.PROTECT)
     pais = models.CharField(choices=get_pais(),max_length=20, verbose_name="país")
     estado = models.CharField(max_length=20, verbose_name="estado")
     direccion = models.CharField(max_length=70, verbose_name="dirección")
-    cpostal = models.CharField(max_length=7, verbose_name="código postal")
-    rfc = models.CharField(max_length=15, verbose_name="rfc")
-    telefono = models.CharField(max_length=10, verbose_name="teléfono")
-    contacto = models.CharField(max_length=50, verbose_name="contacto")
-    descripcion = models.TextField(verbose_name="descripcion")
-    zip = models.CharField(max_length=7, verbose_name="código zip")
+    cpostal = models.CharField(max_length=5, validators=[cpostal_regex], verbose_name="código postal")
+    rfc = models.CharField(max_length=13, validators=[rfc_regex], verbose_name="RFC", help_text='Registro Federal de Contribuyentes')
+    telefono = models.CharField(max_length=10,validators=[telefono_regex], verbose_name="teléfono")
+    descripcion = models.TextField(verbose_name="descripcion", blank=True)
     tax = models.CharField(max_length=45, verbose_name="tax")
     credito = models.IntegerField(verbose_name="credito")
     facturacion = models.IntegerField(verbose_name="facturación")
 
 
     def __str__(self):
-        return self.usuario
+        return self.usuario.first_name
 
-class Contactos_Clientes(models.Model):
+    def delete(self, *args, **kwargs):
+        user = get_object_or_404(User, pk=self.usuario.id)
+        super(Cliente, self).delete(*args, **kwargs)
+        user.delete()
+
+class Contactos_Cliente(models.Model):
     tipo_choices = (("IMP", "Importación"), ("EXP", "Exportación"), \
                     ("FACMX", "Facturación MX"), ("FACUS", "Facturación US"))
     id = models.AutoField(primary_key=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     contacto = models.CharField(max_length=50, verbose_name="contacto")
     tipo = models.CharField(choices=tipo_choices, max_length=20, verbose_name="tipo")
-    telefono = models.CharField(max_length=20, verbose_name="telefono")
+    telefono = models.CharField(max_length=10, validators=[telefono_regex], verbose_name="telefono")
     email = models.EmailField(verbose_name="correo")
 
     def __str__(self):
@@ -216,15 +224,45 @@ class Contactos_Clientes(models.Model):
 
 class Consignatario(models.Model):
     id = models.AutoField(primary_key=True)
+    usuario = models.OneToOneField(User, unique=True, on_delete=models.PROTECT)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    consignatario = models.CharField(max_length=70, verbose_name="consignatario")
-    ejecutivo = models.CharField(max_length=50, verbose_name="ejecutivo")
+
+    def __str__(self):
+        return self.usuario.first_name
+
+    def delete(self, *args, **kwargs):
+        user = get_object_or_404(User, pk=self.usuario.id)
+        super(Consignatario, self).delete(*args, **kwargs)
+        user.delete()
+
+class Ejecutivo_Consignatario(models.Model):
+    id = models.AutoField(primary_key=True)
+    consignatario = models.ForeignKey(Consignatario, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=70, verbose_name="ejecutivo")
+    telefono = models.CharField(max_length=10, validators=[telefono_regex], verbose_name="telefono")
     email = models.EmailField(verbose_name="correo")
 
     def __str__(self):
-        return self.consignatario
+        return self.nombre
+
+class Despachador_Cliente(models.Model):
+    id = models.AutoField(primary_key=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=50, verbose_name="nombre")
+    radio = models.CharField(max_length=20, blank=True, verbose_name="radio")
+    telefono = models.CharField(max_length=10, validators=[telefono_regex], verbose_name="telefono")
+
+    def __str__(self):
+        return self.nombre
 
 class Servicio(models.Model):
+    id = models.AutoField(primary_key=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    importemx = models.FloatField(verbose_name="importe MX")
+    importeusd = models.FloatField(verbose_name="importe USD")
+
+
+class Servicio_Cruce(Servicio):
     tipo_choices = (("T", "Trompo"), ("TUS", "Trompo US"), ("TMX", "Trompo MX"), ("R", "Repartos"),
                     ("ML", "Movimiento local"), ("MLMX", "Movimiento local MX"), ("MLUS", "Movimiento local US"), \
                     ("MLR", "Movimiento local Rampa"), ("EXP", "Exportación"), ("EXPV", "Exportación vacia"), ("IMP", "Importación"), \
@@ -234,17 +272,30 @@ class Servicio(models.Model):
     remolque_choices = (("NO", "No aplica"), ("CS", "Caja seca"), ("CSE", "Caja seca Esp."), ("CSV", "aja seca vacia"), \
                         ("CSH", "Caja seca Hazmat"), ("C", "Contenedor"), ("P", "Plataforma"), ("PE", "Plataforma Esp."), \
                         ("SL", "Semi Lowboy"), ("L", "Lowboy"), ("PP", "Poppies"), ("R", "Refrigerada"), ("PA", "Pipa"))
-    id = models.AutoField(primary_key=True)
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    tipo = models.CharField(choices=tipo_choices, max_length=70, verbose_name="tipo de servicio")
+    tipo = models.CharField(choices=tipo_choices, max_length=25, verbose_name="tipo de servicio")
     dsemana = models.CharField(max_length=7, verbose_name="días de la semana")
     aduana = models.CharField(choices=aduana_choices, max_length=50, verbose_name="aduana")
     remolque = models.CharField(choices=remolque_choices, max_length=50, verbose_name="remolque")
-    importemx = models.FloatField(verbose_name="importe MX")
-    importeusd = models.FloatField(verbose_name="importe USD")
 
     def __str__(self):
-        return self.servicio
+        return self.tipo
+
+class Servicio_Extra(Servicio):
+    tipo_choices = (("AGR", "Agricultura"), ("AMA", "Amarres"), ("BAS", "Bascula"), ("CE", "Costo Extraordinario"),
+                    ("CF", "Cruce en Falso"), ("CFP3", "Cruce en Falso Puente 3"), ("CFC", "Cruce en Falso Colombia"), \
+                    ("DEM", "Demoras"), ("DES", "Descuento"), ("DFI", "Dia Festivo Impo."), ("DFE", "Dia Festivo Expo."), \
+                    ("EE", "Eje Extra"), ("HM", "Haz-Mat"), ("I", "Inspección"),("ICB", "Inspección Costo Base"), \
+                    ("ICBT", "Inspección Costo Base T"),("MF", "Movimiento en Falso"), ("S5000", "Sobrepeso de 1 a 5000 Lb"), \
+                    ("S+5000", "Sobrepeso de +5000 Lb"), ("MC", "Multa Caja"), ("SC", "Servicio de Corte"),("Ref", "Refacturación"), \
+                    ("Rep", "Repartos"),("RC", "Renta de Caja"),("RV", "Retorno Vacio"),("RAMX", "Rojo Aduana MX"),("RAUS", "Rojo Aduana US"), \
+                    ("Pen", "Pension"),("Per", "Permisos"),("GxC", "Grua x Colombia"), ("GxL", "Grua x Laredo"),("Repa", "Reparación"), \
+                    ("Wal", "Walmart"))
+    tipo = models.CharField(choices=tipo_choices, max_length=25, verbose_name="tipo de servicio")
+    dsemana = models.CharField(max_length=7, verbose_name="días de la semana")
+    hlibres = models.IntegerField(verbose_name="horas libres")
+    def __str__(self):
+        return self.tipo
+
 
 class Patio(models.Model):
     id = models.AutoField(primary_key=True)
@@ -252,11 +303,11 @@ class Patio(models.Model):
     direccion = models.CharField(max_length=70, verbose_name="dirección")
     pais = models.CharField(choices=get_pais(), max_length=20, verbose_name="país")
     linea = models.CharField(max_length=50, verbose_name="linea")
-    telefono = models.CharField(max_length=20, verbose_name="telefono")
+    telefono = models.CharField(max_length=20,validators=[telefono_regex], verbose_name="telefono")
     contacto = models.CharField(max_length=50, verbose_name="contacto")
-    observaciones = models.TextField(verbose_name="observaciones")
-    latitud = models.CharField(max_length=50, verbose_name="latitud")
-    longitud = models.CharField(max_length=50, verbose_name="longitud")
+    observaciones = models.TextField(verbose_name="observaciones", blank=True)
+    latitud = models.CharField(max_length=50, validators=[lat_lon_regex], verbose_name="latitud")
+    longitud = models.CharField(max_length=50, validators=[lat_lon_regex], verbose_name="longitud")
 
     def __str__(self):
         return self.nombre

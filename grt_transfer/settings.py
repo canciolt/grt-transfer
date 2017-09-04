@@ -75,7 +75,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'grt_transfer',
         'USER': 'root',
-        'PASSWORD': 'My.DB6914',
+        'PASSWORD': 'AdmMysql2017',
         'HOST': '127.0.0.1',
         'PORT': '',
     }
