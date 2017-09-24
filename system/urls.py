@@ -18,5 +18,6 @@ urlpatterns = [
    url(r'^add/camion/(?P<model>\w+)/(?P<pk>[\d+]+)$', Add_Exta_Camion, name='add-camionextra'),
    url(r'^add/(?P<model>\w+)/(?P<pk>[\d+]+)$', Dinamic_Add.as_view(), name='add-consignatario'),
    # Ajax URL
-   url(r'^ajax/cliente/estados/$', prueba, name='ajax-estados'),
+   url(r'^ajax/cliente/estados/$', get_ciudades, name='ajax-estados'),
+   url(r'^ajax/operacion/servicios/$', get_servicios, name='ajax-servicios'),
 ]

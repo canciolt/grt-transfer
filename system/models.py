@@ -273,7 +273,6 @@ class Servicio_Cruce(Servicio):
                         ("CSH", "Caja seca Hazmat"), ("C", "Contenedor"), ("P", "Plataforma"), ("PE", "Plataforma Esp."), \
                         ("SL", "Semi Lowboy"), ("L", "Lowboy"), ("PP", "Poppies"), ("R", "Refrigerada"), ("PA", "Pipa"))
     tipo = models.CharField(choices=tipo_choices, max_length=25, verbose_name="tipo de servicio")
-    dsemana = models.CharField(max_length=7, verbose_name="días de la semana")
     aduana = models.CharField(choices=aduana_choices, max_length=50, verbose_name="aduana")
     remolque = models.CharField(choices=remolque_choices, max_length=50, verbose_name="remolque")
 
@@ -291,7 +290,6 @@ class Servicio_Extra(Servicio):
                     ("Pen", "Pension"),("Per", "Permisos"),("GxC", "Grua x Colombia"), ("GxL", "Grua x Laredo"),("Repa", "Reparación"), \
                     ("Wal", "Walmart"))
     tipo = models.CharField(choices=tipo_choices, max_length=25, verbose_name="tipo de servicio")
-    dsemana = models.CharField(max_length=7, verbose_name="días de la semana")
     hlibres = models.IntegerField(verbose_name="horas libres")
     def __str__(self):
         return self.tipo
@@ -324,10 +322,10 @@ class Caja(models.Model):
         return self.numero
 
 class Operacion(models.Model):
+    estado_choices = (("P", "Pendiente"), ("I", "Iniciada"),("T", "Terminada"))
     id = models.AutoField(primary_key=True)
     servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, verbose_name="servicio")
-    fecha = models.DateTimeField(verbose_name="fecha")
-    camion = models.ForeignKey(Camion, on_delete=models.PROTECT, verbose_name="camion")
+    fecha = models.DateTimeField(verbose_name="fecha y Hora")
     operador = models.ForeignKey(Operador, on_delete=models.PROTECT, verbose_name="operador")
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, verbose_name="cliente")
     caja = models.ForeignKey(Caja, on_delete=models.PROTECT, verbose_name="caja")
@@ -335,7 +333,7 @@ class Operacion(models.Model):
     origen = models.CharField(max_length=50, verbose_name="origen")
     destino = models.CharField(max_length=50, verbose_name="destino")
     sellos = models.CharField(max_length=50, verbose_name="sellos")
-    estado = models.CharField(max_length=20, verbose_name="estado operación")
+    estado = models.CharField(max_length=20, choices=estado_choices, default="P",  verbose_name="estado operación")
     referencia = models.CharField(max_length=15, verbose_name="referencia")
     pedimento = models.CharField(max_length=15, verbose_name="pedimento")
 

@@ -8,10 +8,11 @@ from django.views.generic import RedirectView
 from django.contrib.auth import logout as auth_logout
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from system.models import *
 
 @login_required
 @ajax
-def prueba(request):
+def get_ciudades(request):
     r = request.POST['pais']
     filePath = os.path.join(settings.BASE_DIR, 'system\json\ciudades.json')
     ciudades = json.load(open(filePath))
@@ -19,6 +20,16 @@ def prueba(request):
     for c in ciudades:
         if c['value'] == request.POST['pais']:
             choice.append((c['value'], c['pais']))
+    return choice
+
+@login_required
+@ajax
+def get_servicios(request):
+    client = request.POST['cliente']
+    servicios = Servicio.objects.filter(cliente=client)
+    choice = []
+    for c in servicios:
+        choice.append((c.id, c.))
     return choice
 
 @method_decorator(login_required, name='dispatch')

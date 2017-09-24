@@ -64,9 +64,11 @@ class LoginView(FormView):
 class Dinamic_Add(SuccessMessageMixin,CreateView):
 
     models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
-              "cliente":Cliente, "consignatario":Consignatario, "patio":Patio}
+              "cliente":Cliente, "consignatario":Consignatario, "patio":Patio, "servicio": Servicio_Cruce, \
+              "servicio_ext": Servicio_Extra, "operacion":Operacion}
     forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
-            "cliente":Cliente_Form, "consignatario":Consignatario_Form, "patio":Patio_Form}
+            "cliente":Cliente_Form, "consignatario":Consignatario_Form, "patio":Patio_Form, \
+            "servicio":Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, "operacion":Operacion_Form}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -187,10 +189,11 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
 class Dinamic_Update(SuccessMessageMixin,UpdateView):
 
     models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
-              "usuario":User,"cliente":Cliente, "consignatario":Consignatario, "patio":Patio}
+              "usuario":User,"cliente":Cliente, "consignatario":Consignatario, "patio":Patio, \
+              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra}
     forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
             "usuario":User_Form,"cliente":Cliente_Form, "consignatario":Consignatario_Form,\
-            "patio":Patio_Form}
+            "patio":Patio_Form, "servicio":Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form}
 
 
     @method_decorator(login_required)
@@ -270,7 +273,7 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
 class Dinamic_List(ListView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario":User,"cliente":Cliente,"patio":Patio}
+              "usuario":User,"cliente":Cliente,"patio":Patio, "servicio":Servicio, "operacion":Operacion}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -283,11 +286,19 @@ class Dinamic_List(ListView):
             raise Http404
         return super(Dinamic_List, self).dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(Dinamic_List, self).get_context_data(**kwargs)
+        context['accion'] = 'update'
+        if self.model == Servicio:
+            context['cruce'] = Servicio_Cruce.objects.all()
+            context['extra'] = Servicio_Extra.objects.all()
+        return context
 
 class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario":User,"cliente":Cliente, "consignatario":Consignatario, "patio":Patio}
+              "usuario":User,"cliente":Cliente, "consignatario":Consignatario, "patio":Patio, \
+              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -316,7 +327,7 @@ class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 class Dinamic_Detail(DetailView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "cliente":Cliente, "patio":Patio}
+              "cliente":Cliente, "patio":Patio, "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)

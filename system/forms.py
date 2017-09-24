@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from pip._vendor.requests.packages.chardet.constants import eStart
+
 from models import *
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
@@ -32,7 +34,7 @@ class OperadorForm(forms.ModelForm):
       model = Operador
       fields = ['nombre', 'direccion', 'ciudad', 'colonia','curp', 'pasaporte', 'telefono','celular','radio',\
                 'camion', 'nss','rfc', 'visa', 'visa_expira', \
-                'fast', 'fast_expira', 'licencia', 'licencia_expira', 'medico', 'medico_expira', 'estado']
+                'fast', 'fast_expira', 'licencia', 'licencia_expira', 'medico', 'medico_expira']
       widgets = {
           'nombre': forms.TextInput(attrs={'class': 'form-control',}),
           'direccion': forms.TextInput(attrs={'class': 'form-control', }),
@@ -43,7 +45,6 @@ class OperadorForm(forms.ModelForm):
           'celular': forms.TextInput(attrs={'class': 'form-control', }),
           'radio': forms.TextInput(attrs={'class': 'form-control', }),
           'camion': forms.Select(attrs={'class': 'form-control select2'}),
-          'estado': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#f96262", 'data-secondary-color': "#66cc66", }),
           'nss': forms.TextInput(attrs={'class': 'form-control', }),
           'curp': forms.TextInput(attrs={'class': 'form-control', }),
           'rfc': forms.TextInput(attrs={'class': 'form-control', }),
@@ -234,6 +235,33 @@ class Patio_Form(forms.ModelForm):
           'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'cols': 4}),
           }
 
+class Servicio_Cruce_Form(forms.ModelForm):
+
+   class Meta:
+      model = Servicio_Cruce
+      fields = ['cliente','tipo','aduana','remolque','importemx','importeusd']
+      widgets = {
+          'cliente': forms.Select(attrs={'class': 'form-control select2'}),
+          'tipo': forms.Select(attrs={'class': 'form-control select2'}),
+          'aduana': forms.Select(attrs={'class': 'form-control select2'}),
+          'remolque': forms.Select(attrs={'class': 'form-control select2'}),
+          'importemx': forms.TextInput(attrs={'class': 'form-control'}),
+          'importeusd': forms.TextInput(attrs={'class': 'form-control'}),
+          }
+
+class Servicio_Extra_Form(forms.ModelForm):
+
+   class Meta:
+      model = Servicio_Extra
+      fields = ['cliente','tipo','importemx','importeusd','hlibres']
+      widgets = {
+          'cliente': forms.Select(attrs={'class': 'form-control select2'}),
+          'tipo': forms.Select(attrs={'class': 'form-control select2'}),
+          'hlibres': forms.NumberInput(attrs={'class': 'form-control'}),
+          'importemx': forms.TextInput(attrs={'class': 'form-control'}),
+          'importeusd': forms.TextInput(attrs={'class': 'form-control'}),
+          }
+
 class Resgistro_Form(UserCreationForm):
     username = forms.RegexField(label=u"Usuario",regex=r'^[a-z\d_]{4,15}$', widget=forms.TextInput(
         attrs={'maxlength': 30, 'class': 'form-control', 'placeholder': _(u"Usuario")}))
@@ -264,6 +292,28 @@ class Resgistro_User_Cliente_Form(UserCreationForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'required': ''}),
             'is_active': forms.CheckboxInput(attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
         }
+
+class Operacion_Form(forms.ModelForm):
+
+   def __init__(self, *args, **kwargs):
+        super(Operacion_Form, self).__init__(*args, **kwargs)
+        self.fields['operador'].queryset = Operador.objects.filter(estado=False)
+
+   class Meta:
+      model = Operacion
+      fields = ['fecha','operador','cliente','consignatario','servicio','sellos', \
+                'pedimento','caja','origen','destino','referencia']
+      widgets = {
+          'fecha': forms.DateTimeInput(attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss', "placeholder": "dd/mm/yyyy hh:ii:ss"}),
+          'operador': forms.Select(attrs={'class': 'form-control select2'}),
+          'cliente': forms.Select(attrs={'class': 'form-control select2'}),
+          'sellos': forms.TextInput(attrs={'class': 'form-control'}),
+          'pedimento': forms.TextInput(attrs={'class': 'form-control', }),
+          'caja': forms.Select(attrs={'class': 'form-control select2'}),
+          'origen': forms.TextInput(attrs={'class': 'form-control'}),
+          'destino': forms.TextInput(attrs={'class': 'form-control'}),
+          'referencia': forms.TextInput(attrs={'class': 'form-control'}),
+          }
 
 class Update_User_Cliente_Form(UserCreationForm):
     email = forms.EmailField(label=u"Correo",widget=forms.EmailInput(
