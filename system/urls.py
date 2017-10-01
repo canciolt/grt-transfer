@@ -19,5 +19,6 @@ urlpatterns = [
    url(r'^add/(?P<model>\w+)/(?P<pk>[\d+]+)$', Dinamic_Add.as_view(), name='add-consignatario'),
    # Ajax URL
    url(r'^ajax/cliente/estados/$', get_ciudades, name='ajax-estados'),
-   url(r'^ajax/operacion/servicios/$', get_servicios, name='ajax-servicios'),
+   url(r'^ajax/operacion/get_data_form/$', get_data_form, name='ajax-servicios'),
+   url(r'^ajax/operacion/startop/$', startop, name='ajax-startop'),
 ]

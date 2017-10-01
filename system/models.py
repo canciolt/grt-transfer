@@ -5,6 +5,7 @@ from  django.contrib.auth.models import User, AbstractUser
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.core.validators import RegexValidator
+from datetime import datetime
 import json
 import os
 
@@ -12,20 +13,27 @@ telefono_regex = RegexValidator(regex=r'^\+?1?\d{10}$',message='Número de telef
 cpostal_regex = RegexValidator(regex=r'^\+?1?\d{4,5}$', message='Código postal invalido.')
 rfc_regex = RegexValidator(regex=r'^([A-ZÑ&]{3,4}) ?(?:- ?)?(\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])) ?(?:- ?)?([A-Z\d]{2})([A\d])$', message='Código RFC invalido')
 lat_lon_regex = RegexValidator(regex=r'^-?([1-9]?[1-9]|[1-9]0)\.{1}\d{1,6}$', message='Coordenada invalida')
+num_lett_regex = RegexValidator(regex=r'^[0-9a-zA-Z]+$', message='Numero de caja invalido')
+curp_regex = RegexValidator(regex=r'^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$', message='CURP invalido')
+nss_regex = RegexValidator(regex=r'^(\d{2})(\d{2})(\d{2})\d{5}$', message='Numero seguro social invalido')
+licencia_regex = RegexValidator(regex=r'([A-ZÑ]{4})\d{6}', message='Numero de licencia invalido')
+fast_regex = RegexValidator(regex=r'^\d{14}$', message='Numero de Fast invalido')
+visa_regex = RegexValidator(regex=r'([A-ZÑ]{3})\d{9}', message='Numero de visa invalido')
+medico_regex = RegexValidator(regex=r'^\d{6}$', message='Numero de medico invalido')
 
 class Camion(models.Model):
-    tipo_choices = (("0", "Libre"), ("1", "Ocupado"),("2", "Arrendado"))
+    tipo_choices = (("0", "Libre"), ("1", "Asignado"),("2", "Arrendado"))
     id = models.AutoField(primary_key=True)
-    numero = models.IntegerField(unique=True, verbose_name="número")
+    numero = models.IntegerField(unique=True, validators=[num_lett_regex], verbose_name="número")
     marca = models.CharField(max_length=50, verbose_name="marca")
     modelo = models.IntegerField(verbose_name="modelo")
-    serie = models.CharField(unique=True, max_length=18, verbose_name="serie")
+    serie = models.CharField(unique=True, max_length=18, validators=[num_lett_regex], verbose_name="serie")
     millaje = models.IntegerField(default=0, verbose_name="millaje")
-    placa = models.CharField(unique=True, max_length=8, verbose_name="placa")
+    placa = models.CharField(unique=True, max_length=8, validators=[num_lett_regex], verbose_name="placa")
     tag = models.IntegerField(verbose_name="TAG", help_text="Número de serie Tarjeta de cruze (Ida)")
     decal = models.IntegerField(verbose_name="DECAL", help_text="Número de serie Tarjeta de cruze (Regreso)")
-    estado = models.CharField(max_length=2,choices=tipo_choices, default=0, verbose_name="estado")
-    circulacion = models.CharField(max_length=20, verbose_name="circulación")
+    estado = models.CharField(max_length=2, choices=tipo_choices, default=0, verbose_name="estado", help_text="Seleccione si el camion esta arrendado")
+    circulacion = models.CharField(max_length=20, validators=[num_lett_regex], verbose_name="circulación")
     expira_circulacion = models.DateField(verbose_name="vencimiento de circulación")
 
     class Meta:
@@ -102,22 +110,22 @@ class Operador(models.Model):
     direccion = models.CharField(max_length=50, verbose_name="dirección")
     colonia = models.CharField(choices=get_colonia(), max_length=20, verbose_name="colonia")
     ciudad = models.CharField(max_length=20, default="Nuevo Laredo", verbose_name="ciudad")
-    pasaporte = models.CharField(max_length=15, verbose_name="pasaporte")
-    telefono = models.CharField(blank=True, max_length=10, verbose_name="teléfono")
+    pasaporte = models.CharField(max_length=15, validators=[nss_regex], verbose_name="pasaporte")
+    telefono = models.CharField(blank=True, validators=[telefono_regex], max_length=10, verbose_name="teléfono")
     radio = models.CharField(blank=True, max_length=12, verbose_name="radio")
-    celular = models.CharField(blank=True, max_length=10, verbose_name="celular")
+    celular = models.CharField(blank=True, max_length=10, validators=[telefono_regex], verbose_name="celular")
     camion = models.ForeignKey(Camion, null=True, on_delete=models.PROTECT)
     estado = models.BooleanField(default=False, verbose_name="estado", help_text="Seleccione estado (Libre-Ocupado)")
-    nss = models.CharField(max_length=30, verbose_name="seguro social")
-    curp = models.CharField(max_length=30, verbose_name="CURP")
-    rfc = models.CharField(max_length=30, verbose_name="registro de contribuyentes")
-    visa = models.CharField(max_length=15, verbose_name="visa")
+    nss = models.CharField(max_length=11, validators=[nss_regex], verbose_name="seguro social")
+    curp = models.CharField(max_length=30, validators=[curp_regex], verbose_name="CURP")
+    rfc = models.CharField(max_length=30, validators=[rfc_regex], verbose_name="registro de contribuyentes")
+    visa = models.CharField(max_length=15, validators=[visa_regex], verbose_name="visa")
     visa_expira = models.DateField(verbose_name="vencimiento de visa")
-    fast = models.CharField(max_length=15, verbose_name="cruse FAST")
+    fast = models.CharField(max_length=15, validators=[fast_regex], verbose_name="cruse FAST")
     fast_expira = models.DateField(verbose_name="vencimiento de FAST")
-    licencia = models.CharField(max_length=25, verbose_name="licencia")
+    licencia = models.CharField(max_length=25, validators=[licencia_regex], verbose_name="licencia")
     licencia_expira = models.DateField(verbose_name="vencimiento de licencia")
-    medico = models.CharField(max_length=25, verbose_name="seguro medico")
+    medico = models.CharField(max_length=25, validators=[medico_regex], verbose_name="seguro medico")
     medico_expira = models.DateField(verbose_name="vencimiento de seguro medico")
 
     def __str__(self):
@@ -217,7 +225,7 @@ class Contactos_Cliente(models.Model):
     contacto = models.CharField(max_length=50, verbose_name="contacto")
     tipo = models.CharField(choices=tipo_choices, max_length=20, verbose_name="tipo")
     telefono = models.CharField(max_length=10, validators=[telefono_regex], verbose_name="telefono")
-    email = models.EmailField(verbose_name="correo")
+    email = models.EmailField(unique=True,verbose_name="correo")
 
     def __str__(self):
         return self.numero
@@ -312,33 +320,50 @@ class Patio(models.Model):
 
 class Caja(models.Model):
     id = models.AutoField(primary_key=True)
-    numero = models.CharField(max_length=20, unique=True, verbose_name="numero")
+    numero = models.CharField(max_length=20, unique=True, validators=[num_lett_regex], verbose_name="numero")
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha_entrada = models.DateTimeField(verbose_name="fecha de entrada")
-    fecha_salida = models.DateTimeField(verbose_name="fecha de salida")
+    fecha_salida = models.DateTimeField(blank=True, verbose_name="fecha de salida")
     observaciones = models.TextField(verbose_name="observaciones")
 
     def __str__(self):
         return self.numero
 
+def get_ruta():
+    filePath = os.path.join(settings.BASE_DIR, 'system\json\op_rutas.json')
+    rutas = json.loads(open(filePath).read())
+    choice = []
+    for c in rutas:
+        choice.append((c['value'], c['ruta']))
+    return choice
+
 class Operacion(models.Model):
-    estado_choices = (("P", "Pendiente"), ("I", "Iniciada"),("T", "Terminada"))
+    estado_choices = (("P", "Pendiente autorización"),("I", "Iniciada"),("T", "Terminada"))
     id = models.AutoField(primary_key=True)
     servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, verbose_name="servicio")
-    fecha = models.DateTimeField(verbose_name="fecha y Hora")
+    fecha = models.DateTimeField(default=datetime.now())
     operador = models.ForeignKey(Operador, on_delete=models.PROTECT, verbose_name="operador")
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, verbose_name="cliente")
     caja = models.ForeignKey(Caja, on_delete=models.PROTECT, verbose_name="caja")
     consignatario = models.ForeignKey(Consignatario, verbose_name="consignatario")
-    origen = models.CharField(max_length=50, verbose_name="origen")
-    destino = models.CharField(max_length=50, verbose_name="destino")
-    sellos = models.CharField(max_length=50, verbose_name="sellos")
+    origen = models.CharField(max_length=50, choices=get_ruta(), verbose_name="origen")
+    destino = models.CharField(max_length=50, choices=get_ruta(), verbose_name="destino")
     estado = models.CharField(max_length=20, choices=estado_choices, default="P",  verbose_name="estado operación")
     referencia = models.CharField(max_length=15, verbose_name="referencia")
     pedimento = models.CharField(max_length=15, verbose_name="pedimento")
 
     def __str__(self):
         return self.id
+
+class Sello_Operacion(models.Model):
+    id = models.AutoField(primary_key=True)
+    operacion = models.ForeignKey(Operacion, on_delete=models.PROTECT,  verbose_name="operacion" )
+    sello = models.CharField(max_length=50, verbose_name="sello")
+    fecha = models.DateTimeField(help_text="Fecha")
+    observaciones = models.TextField(blank=True, verbose_name="observaciones")
+
+    def __str__(self):
+        return self.sello
 
 
 class Tasa_Cambio(models.Model):

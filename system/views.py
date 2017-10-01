@@ -65,10 +65,11 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
 
     models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
               "cliente":Cliente, "consignatario":Consignatario, "patio":Patio, "servicio": Servicio_Cruce, \
-              "servicio_ext": Servicio_Extra, "operacion":Operacion}
+              "servicio_ext": Servicio_Extra, "caja": Caja, "operacion":Operacion}
     forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
             "cliente":Cliente_Form, "consignatario":Consignatario_Form, "patio":Patio_Form, \
-            "servicio":Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, "operacion":Operacion_Form}
+            "servicio":Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form,"caja":Caja_Form, \
+            "operacion":Operacion_Form}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -162,7 +163,6 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
         if self.model == Consignatario:
             usuario = context['usuarioform']
             econsignatario = context['econsignatario']
-            cliente = context['cliente']
             with transaction.atomic():
                 if econsignatario.is_valid():
                     if usuario.is_valid():
@@ -183,6 +183,26 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
                         return super(Dinamic_Add, self).form_invalid(form)
                 else:
                     return super(Dinamic_Add, self).form_invalid(form)
+        if self.model == Operador:
+            camion = get_object_or_404(Camion, pk=form.cleaned_data['camion'].id)
+            with transaction.atomic():
+                camion.estado = 1
+                camion.save()
+        if self.model == Operacion:
+            s = form.cleaned_data['sello']
+            operador = form.cleaned_data['operador']
+            with transaction.atomic():
+                operacion = form.save()
+                ope = get_object_or_404(Operador, pk=operador.id)
+                ope.estado=True
+                ope.save()
+                sello = Sello_Operacion()
+                sello.operacion = operacion
+                sello.sello = s
+                sello.fecha = datetime.now()
+                sello.observaciones = "Sello de salida"
+                sello.save()
+
         return super(Dinamic_Add, self).form_valid(form)
 
 
@@ -190,10 +210,11 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
 
     models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
               "usuario":User,"cliente":Cliente, "consignatario":Consignatario, "patio":Patio, \
-              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra}
+              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "caja":Caja}
     forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
             "usuario":User_Form,"cliente":Cliente_Form, "consignatario":Consignatario_Form,\
-            "patio":Patio_Form, "servicio":Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form}
+            "patio":Patio_Form, "servicio":Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, \
+            "caja":Caja_Form}
 
 
     @method_decorator(login_required)
@@ -273,14 +294,16 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
 class Dinamic_List(ListView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario":User,"cliente":Cliente,"patio":Patio, "servicio":Servicio, "operacion":Operacion}
-
+              "usuario":User,"cliente":Cliente,"patio":Patio, "servicio":Servicio, "operacion":Operacion, \
+              "caja":Caja, "oppendientes":Operacion}
+    pk_model = ""
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
         if kwargs['model'] in self.models:
             self.model = self.models[kwargs['model']]
+            self.pk_model = kwargs['model']
             self.template_name = kwargs['model']+"_list.html"
         else:
             raise Http404
@@ -294,11 +317,19 @@ class Dinamic_List(ListView):
             context['extra'] = Servicio_Extra.objects.all()
         return context
 
+    def get_queryset(self):
+        queryset = super(Dinamic_List, self).get_queryset()
+        if self.model == Operacion and self.pk_model != "oppendientes":
+            return queryset.exclude(estado="P")
+        if self.pk_model == "oppendientes":
+            return queryset.filter(estado="P")
+        return queryset
+
 class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "usuario":User,"cliente":Cliente, "consignatario":Consignatario, "patio":Patio, \
-              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra}
+              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "caja":Caja}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -327,7 +358,8 @@ class Dinamic_Delete(SuccessMessageMixin,DeleteView):
 class Dinamic_Detail(DetailView):
 
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "cliente":Cliente, "patio":Patio, "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra}
+              "cliente":Cliente, "patio":Patio, "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, \
+              "caja":Caja,"operacion":Operacion}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -348,7 +380,7 @@ class Dinamic_Detail(DetailView):
             context['orepa'] = orepa
         if self.model == Cliente:
             ccliente = Contactos_Cliente.objects.filter(cliente=self.object.id)
-            consignatarios = Consignatario.objects.filter(cliente=self.object.id)
+            consignatarios = Consignatario.objects.filter(cliente=self.object.id, usuario__is_active=True)
             despachadores = Despachador_Cliente.objects.filter(cliente=self.object.id)
             context['ccliente'] = ccliente
             context['consignatarios'] = consignatarios
@@ -363,6 +395,9 @@ class Dinamic_Detail(DetailView):
             context['repa'] = repa
             context['ubi'] = ubi
             context['si'] = {"smx":smx,"sus":sus,"ins":ins,"ver":ver}
+        if self.model == Operacion:
+            sellos = Sello_Operacion.objects.filter(operacion=self.object.id)
+            context['sellos'] = sellos
         return context
 
 @method_decorator(login_required, name='dispatch')

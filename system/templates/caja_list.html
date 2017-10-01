@@ -5,42 +5,34 @@
 <div class="row">
                     <div class="col-sm-12">
                         <div class="white-box">
-                            <h3 class="box-title m-b-0">Listado de Operaciones</h3>
+                            <h3 class="box-title m-b-0">Listado de Cajas</h3>
                         <div class="button-box text-right">
-                                <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add' 'operacion' %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Operacion</button>
-                            <button class="btn btn-default waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'oppendientes' %}'"><span class="btn-label"><i class="fa fa-check"></i></span>Pendientes Aprobación</button>
+                                <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add' 'caja' %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Caja</button>
                         </div>
                             <p class="text-muted m-b-30"></p>
                             <div class="table-responsive">
                                 <table id="myTable" class="table table-striped">
                                     <thead>
                                         <tr>
-                                            <th>#</th>
-                                            <th>Servicio</th>
-                                            <th>Fecha</th>
+                                            <th>Número</th>
                                             <th>Cliente</th>
-                                            <th>Operador</th>
-                                            <th>Estado</th>
+                                            <th>Fecha Entrada</th>
+                                            <th>Fecha Salida</th>
                                             <th>Opciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                    {{ object_listi }}
                                     {% for l in object_list %}
                                             <tr>
-                                                <td>{{ l.id }}</td>
-                                                <td>{{ l.servicio.servicio_cruce.get_tipo_display }}{{ l.servicio.servicio_extra.get_tipo_display }} </td>
-                                                <td>{{ l.fecha }}</td>
+                                                <td>{{ l.numero }}</td>
                                                 <td>{{ l.cliente }}</td>
-                                                <td>{{ l.operador }}</td>
+                                                <td>{{ l.fecha_entrada }}</td>
+                                                <td>{{ l.fecha_salida }}</td>
+
                                                 <td>
-                                                    {% if l.estado == "T"  %}
-                                                        <div class="label label-table label-success">{{ l.get_estado_display }}</div></td>
-                                                    {% else %}
-                                                        <div class="label label-table label-custom">{{ l.get_estado_display }}</div></td>
-                                                    {% endif %}
-                                                <td>
-                                                   <a href="/detail/operacion/{{ l.id }}" data-toggle="tooltip" data-original-title="Ver"> <i class="fa fa-eye text-inverse m-r-10"></i> </a>
+                                                    <a href="/detail/caja/{{ l.id }}" data-toggle="tooltip" data-original-title="Ver"> <i class="fa fa-eye text-inverse m-r-10"></i> </a>
+                                                    <a href="/update/caja/{{ l.id }}" data-toggle="tooltip" data-original-title="Editar"> <i class="fa fa-pencil text-inverse m-r-10"></i> </a>
+                                                    <a href="/delete/caja/{{ l.id }}" data-toggle="tooltip" data-original-title="Eliminar"> <i class="fa fa-close text-danger"></i> </a>
                                                 </td>
                                             </tr>
                                     {% endfor %}
@@ -52,11 +44,17 @@
                     </div>
                 </div>
 
+
+
+
+
+
 {% endblock %}
 
 {% block css %}
      <link href="{% static "system/plugins/bower_components/datatables/jquery.dataTables.min.css" %}" rel="stylesheet" type="text/css" />
 {% endblock %}
+
 
 {% block js %}
      <script src="{% static "system/plugins/bower_components/datatables/jquery.dataTables.min.js" %}"></script>

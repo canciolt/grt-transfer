@@ -18,6 +18,22 @@
             ajaxPost('/logout/',{}, function(content){});
         });
     });
+     $('#activebtn').click(function(){
+         var opid = $( this ).attr('opid')
+         swal({
+            title: "Activar Operación",
+            text: "Pulse activar para iniciar operación",
+            type: "success",
+            showCancelButton: true,
+            confirmButtonColor: "#00c292",
+            confirmButtonText: "Activar",
+            cancelButtonText:"Cancelar",
+            closeOnConfirm: false
+        }, function(){
+             ajaxPost('/ajax/operacion/startop/',{operacion:opid}, function(content){location.reload();});
+
+        });
+    });
     },
     //init
     $.SweetAlert = new SweetAlert, $.SweetAlert.Constructor = SweetAlert

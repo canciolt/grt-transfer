@@ -11,16 +11,8 @@
                                 <div class="panel-body">
                                     <form action="" data-toggle="validator"  method="post">{% csrf_token %}
                                         <div class="form-body">
-                                            <h3 class="box-title">{% if accion == 'update' %}Editar Camion{% else %}Agregar Camion{% endif %}</h3>
+                                            <h3 class="box-title">{% if accion == 'update' %}Editar Caja{% else %}Agregar Caja{% endif %}</h3>
                                             <hr>
-                                        {% if accion == 'update' %}
-                                       <div class="button-box text-left">
-                                            <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add-camionextra' 'verificacion' object.id %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Verificación</button>
-                                            <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add-camionextra' 'inspeccion' object.id %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Inspección</button>
-                                            <button class="btn btn-custom waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add-camionextra' 'seguromx' object.id %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Seguro MX</button>
-                                            <button class="btn btn-custom waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add-camionextra' 'segurous' object.id %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Seguro US</button>
-                                        </div>
-                                        {% endif %}
 
 
                                             <div class="row">
@@ -56,7 +48,6 @@
                                                         {% endif %}
                                                         {% endif %}
 
-
                                                     </div>
                                                     </div>
                                                 {% endfor %}
@@ -75,26 +66,23 @@
                 </div>
 {% endblock %}
 {% block css %}
-
-    <link href="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/system/plugins/bower_components/switchery/dist/switchery.min.css" rel="stylesheet" />
+    <link href="/static/system/plugins/bower_components/custom-select/custom-select.css" rel="stylesheet" type="text/css" />
+    <link href="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css" />
 
 {% endblock %}
 {% block js %}
-
-    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datepicker.es.min.js"></script>
+   <script src="/static/system/plugins/bower_components/custom-select/custom-select.min.js" type="text/javascript"></script>
+    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.min.js"></script>
+    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.es.js"></script>pt>
     <script src="/static/system/js/validator.js"></script>
     <script>
             jQuery(document).ready(function () {
-                // Switch
-                var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
 
-                // Calendario
-                        jQuery('.mydatepicker, #datepicker').datepicker({language: 'es'});
-                        jQuery('#datepicker-autoclose').datepicker({
-                            autoclose: true
-                            , todayHighlight: true
-                        });
+                $(".select2").select2();
+                $('#id_fecha_entrada').datetimepicker({language:  'es', weekStart: 1, todayBtn:  1, autoclose: 1, todayHighlight: 1, startView: 2, forceParse: 0, showMeridian: 2 });
+                $('#id_fecha_salida').datetimepicker({language:  'es', weekStart: 1, todayBtn:  1, autoclose: 1, todayHighlight: 1, startView: 2, forceParse: 0, showMeridian: 2 });
+
             });
         </script>
 {% endblock %}
