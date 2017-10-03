@@ -79,7 +79,10 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
             self.model = self.models[kwargs['model']]
             self.form_class = self.forms[kwargs['model']]
             self.template_name = kwargs['model']+"_form.html"
-            self.success_url = "/list/"+kwargs['model']
+            if self.models == Servicio_Extra or self.model == Servicio_Cruce:
+                self.success_url = "/list/servicio"
+            else:
+                self.success_url = "/list/"+kwargs['model']
             self.success_message = kwargs['model'] + " agregado satisfactoriamente."
         else:
             raise Http404
@@ -202,7 +205,8 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
                 sello.fecha = datetime.now()
                 sello.observaciones = "Sello de salida"
                 sello.save()
-
+                event = Evento_Operacion(evento="INIT", operacion=operacion, fecha_inicio=operacion.fecha)
+                event.save()
         return super(Dinamic_Add, self).form_valid(form)
 
 
@@ -225,7 +229,10 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
             self.model = self.models[kwargs['model']]
             self.form_class = self.forms[kwargs['model']]
             self.template_name = kwargs['model']+"_form.html"
-            self.success_url = "/list/"+kwargs['model']
+            if self.model == Servicio_Extra or self.model == Servicio_Cruce :
+                self.success_url = "/list/servicio"
+            else:
+                self.success_url = "/list/"+kwargs['model']
             self.success_message = kwargs['model']+" modificado satisfactoriamente."
         else:
             raise Http404
@@ -337,7 +344,10 @@ class Dinamic_Delete(SuccessMessageMixin,DeleteView):
     def dispatch(self, request, *args, **kwargs):
         if kwargs['model'] in self.models:
             self.model = self.models[kwargs['model']]
-            self.success_url = "/list/"+kwargs['model']
+            if self.models == Servicio_Extra or self.model == Servicio_Cruce:
+                self.success_url = "/list/servicio"
+            else:
+                self.success_url = "/list/"+kwargs['model']
             self.template_name = "delete.html"
             self.success_message = kwargs['model'] + " eliminado satisfactoriamente."
 

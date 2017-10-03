@@ -40,8 +40,12 @@ class CamionForm(forms.ModelForm):
 class OperadorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(OperadorForm, self).__init__(*args, **kwargs)
-        self.fields['camion'].queryset = Camion.objects.filter(estado=0, expira_circulacion__gt=datetime.now())
-        
+        if kwargs['instance']:
+            self.fields['camion'].queryset = Camion.objects.filter(estado=0, expira_circulacion__gt=datetime.now())\
+                                             | Camion.objects.filter(id=kwargs['instance'].camion.id)
+        else:
+            self.fields['camion'].queryset = Camion.objects.filter(estado=0, expira_circulacion__gt=datetime.now())
+
     class Meta:
         model = Operador
         fields = ['nombre', 'direccion', 'ciudad', 'colonia', 'curp', 'pasaporte', 'telefono', 'celular', 'radio', \
