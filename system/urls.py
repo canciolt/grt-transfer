@@ -22,4 +22,10 @@ urlpatterns = [
    url(r'^ajax/cliente/estados/$', get_ciudades, name='ajax-estados'),
    url(r'^ajax/operacion/get_data_form/$', get_data_form, name='ajax-servicios'),
    url(r'^ajax/operacion/startop/$', startop, name='ajax-startop'),
+   url(r'^ajax/operacion/change_sello/$', change_sello, name='ajax-change_sello'),
+   url(r'^ajax/operacion/evento_add/$', event_add, name='ajax-event_add'),
+   url(r'^ajax/factura/get_client_operations/$', get_client_operations, name='ajax-client_operations'),
+   url(r'^ajax/factura/reset_operations_json/$', reset_operations_json, name='ajax-reset-operations-json'),
+   url(r'^ajax/factura/facturar/$', facturar, name='ajax-facturar'),
+   url(r'^ajax/system/get_tasa_cambio/$', get_tasa, name='ajax-get-tasa'),
 ]

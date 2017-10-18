@@ -1,9 +1,7 @@
 {% extends "base.html" %}
-
-
-
 {% block main-content %}
-                <div class="row">
+                <!--suppress ALL -->
+    <div class="row">
                     <div class="col-md-12">
                         <div class="panel panel-info">
                             <div class="panel-wrapper collapse in" aria-expanded="true">
@@ -165,7 +163,9 @@
                 // Switch
                 $('.formset_row').formset({prefix:'contactos_clientes_set'});
                 $('.formset_row2').formset({prefix:'despachador_cliente_set'});
-                $('#id_username').blur();
+                $( "#id_username" ).blur(function() {
+                    var res = $(this).val().split("client-");
+                    if (res.length == 1){$(this).val("client-"+$(this).val())}else{$(this).val("client-"+res[1])}});
                 var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
                 $( "#id_pais" ).change(function() {
                     $('div.estado').block({

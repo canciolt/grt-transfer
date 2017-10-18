@@ -43,4 +43,10 @@
 function($) {
     "use strict";
     $.SweetAlert.init()
+    $('#tasa-cambio').click(function(){
+        ajaxPost('/ajax/system/get_tasa_cambio/', function(content){
+            $('div.mail-contnet h5').html("1 USD = "+content['tasa']+" MNX")
+            $('div.mail-contnet span.time').html(content['fecha'])
+        });
+    });
 }(window.jQuery);

@@ -16757,3 +16757,11 @@ a.fc-event:not([href]):not([tabindex]) {
     opacity:0.6;         //This grays it out to look disabled
 }
 /*Top bar header*/
+
+input.search-input{
+  box-sizing: border-box;
+  -moz-box-sizing:border-box;
+  width: 100%;
+  margin-bottom: 5px;
+  height: auto;
+}

@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block main-content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-info">
+                <div class="panel-wrapper collapse in" aria-expanded="true">
+                    <div class="panel-body">
+                        <form action="" data-toggle="validator" method="post" onsubmit="return false">{% csrf_token %}
+                            <div class="form-body">
+                                <h3 class="box-title">{% if accion == 'update' %}Editar Factura{% else %}Agregar
+                                    Factura{% endif %}</h3>
+                                <hr>
+                                <div class="row">
+                                    {% for field in form %}
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="control-label">{{ field.label_tag }}</label>
+                                                {{ field }}
+                                                {% if field.errors %}
+                                                    {% for f in field.errors %}
+                                                        <span class="alert-block"><small>{{ f|safe }}</small></span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    {% if field.help_text %}
+                                                        <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-sm-12">
+                                    <div class="white-box">
+                                        <h3 class="box-title m-b-0">Operaciones por Facturar</h3>
+                                        <div class="table-responsive">
+                                            <table id="id_operaciones" class="display nowrap" cellspacing="0"
+                                                   width="100%">
+                                                <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Fecha</th>
+                                                    <th>Cliente</th>
+                                                    <th>Operador</th>
+                                                    <th>Servicio</th>
+                                                    <th>Opciones</th>
+                                                </tr>
+                                                </thead>
+                                                <tfoot>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Fecha</th>
+                                                    <th>Cliente</th>
+                                                    <th>Operador</th>
+                                                    <th>Servicio</th>
+                                                    <th>Opciones</th>
+                                                </tr>
+                                                </tfoot>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button id="btn-factura" type="submit" class="btn btn-success"><i
+                                        class="fa fa-check"></i>Agregar
+                                </button>
+                                <button type="button" class="btn btn-default" onclick="window.history.go(-1);">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="factura-modal" class="modal" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel"
+         aria-hidden="true" style="display: none;">
+        <div class="modal-dialog" style="max-width:1000px; !important;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">×
+                    </button>
+                    <div class="modal-body" id="modal-body-factura">
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-default waves-effect"
+                                data-dismiss="modal">Cerrar
+                        </button>
+                        <button id="sello-button" type="button"
+                                class="btn btn-danger waves-effect waves-light">
+                            Aprobar Factura
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block css %}
+
+    <link href="/static/system/plugins/bower_components/custom-select/custom-select.css" rel="stylesheet"
+          type="text/css"/>
+    <link href="/static/system/plugins/bower_components/datatables/jquery.dataTables.min.css" rel="stylesheet"
+          type="text/css"/>
+{% endblock %}
+{% block js %}
+
+    <script src="/static/system/plugins/bower_components/custom-select/custom-select.min.js"
+            type="text/javascript"></script>
+    <script src="/static/system/plugins/bower_components/blockUI/jquery.blockUI.js"></script>
+    <script src="/static/system/plugins/bower_components/datatables/jquery.dataTables.min.js"></script>
+
+
+    <script>
+        jQuery(document).ready(function () {
+            $(".select2").select2();
+            ajaxPost('/ajax/factura/reset_operations_json/', function (content) {
+            })
+            var table = $('#id_operaciones').DataTable({
+                ajax: '/static/system/json/operaciones.json',
+                deferRender: true,
+                columns: [
+                    {data: '#'},
+                    {data: 'fecha'},
+                    {data: 'cliente'},
+                    {data: 'operador'},
+                    {data: 'servicio'},
+                    {data: 'opciones'}
+                ],
+                rowId: 'extn',
+                select: true,
+                dom: 'Bfrtip',
+                order: [[1, "desc"]],
+
+            });
+
+            $("#id_cliente").change(function () {
+                $("table#id_operaciones tbody").block({
+                    message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
+                        border: '1px solid #fff'
+                    }
+                });
+                ajaxPost('/ajax/factura/get_client_operations/', {"cliente": $("#id_cliente").val()}, function (content) {
+                    table.ajax.reload();
+                })
+                $("table#id_operaciones tbody").unblock();
+            });
+
+
+            $('#btn-factura').click(function () {
+                var cantop = 0;
+                var op = []
+                $("table#id_operaciones tbody tr").each(function () {
+                    var that = $(this).text()
+                    $('td input', this).each(function () {
+                        if ($(this).is(':checked')) {
+                            cantop++;
+                            op.push(that[0])
+                        }
+                    });
+                });
+                if ($("#id_cliente").val()) {
+                    if (cantop > 0) {
+                        ajaxPost('/ajax/factura/facturar/', {
+                            "cliente": $("#id_cliente").val(),
+                            "operaciones": JSON.stringify(op)
+                        }, function (content) {
+                            $('#modal-body-factura').html('');
+                            $('#modal-body-factura').html(content);
+                            $('#factura-modal').modal()
+                        })
+                    } else {
+                        swal("Atención!", "Debe seleccionar al menos una operación para poder facturar.")
+                    }
+                }else{
+                    swal("Atención!", "Debe seleccionar un cliente para poder facturar.")
+                }
+            });
+
+
+        });
+    </script>
+{% endblock %}

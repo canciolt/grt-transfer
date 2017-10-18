@@ -1,7 +1,4 @@
 {% extends "base.html" %}
-
-
-
 {% block main-content %}
                 <div class="row">
                     <div class="col-md-12">
@@ -123,7 +120,9 @@
             jQuery(document).ready(function () {
                 // Switch
                 $('.formset_row').formset({prefix:'ejecutivo_consignatario_set'});
-                $('#id_username').blur();
+                $( "#id_username" ).blur(function() {
+                    var res = $(this).val().split("con-");
+                    if (res.length == 1){$(this).val("con-"+$(this).val())}else{$(this).val("con-"+res[1])}});
                 var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
                 $('.js-switch').each(function () {
                     new Switchery($(this)[0], $(this).data());

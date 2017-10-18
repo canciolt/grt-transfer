@@ -6,6 +6,8 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from mixins import AuditMixin
+from django.core.exceptions import ObjectDoesNotExist
 import json
 import os
 
@@ -16,12 +18,13 @@ lat_lon_regex = RegexValidator(regex=r'^-?([1-9]?[1-9]|[1-9]0)\.{1}\d{1,6}$', me
 num_lett_regex = RegexValidator(regex=r'^[0-9a-zA-Z]+$', message='Numero de caja invalido')
 curp_regex = RegexValidator(regex=r'^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$', message='CURP invalido')
 nss_regex = RegexValidator(regex=r'^(\d{2})(\d{2})(\d{2})\d{5}$', message='Numero seguro social invalido')
+pass_regex = RegexValidator(regex=r'^(\d{2})(\d{2})(\d{2})\d{5}$', message='Numero de pasaporte invalido')
 licencia_regex = RegexValidator(regex=r'([A-ZÑ]{4})\d{6}', message='Numero de licencia invalido')
 fast_regex = RegexValidator(regex=r'^\d{14}$', message='Numero de Fast invalido')
 visa_regex = RegexValidator(regex=r'([A-ZÑ]{3})\d{9}', message='Numero de visa invalido')
 medico_regex = RegexValidator(regex=r'^\d{6}$', message='Numero de medico invalido')
 
-class Camion(models.Model):
+class Camion(AuditMixin, models.Model):
     tipo_choices = (("0", "Libre"), ("1", "Asignado"),("2", "Arrendado"))
     id = models.AutoField(primary_key=True)
     numero = models.IntegerField(unique=True, validators=[num_lett_regex], verbose_name="número")
@@ -111,7 +114,7 @@ class Operador(models.Model):
     direccion = models.CharField(max_length=50, verbose_name="dirección")
     colonia = models.CharField(choices=get_colonia(), max_length=20, verbose_name="colonia")
     ciudad = models.CharField(max_length=20, default="Nuevo Laredo", verbose_name="ciudad")
-    pasaporte = models.CharField(max_length=15, validators=[nss_regex], verbose_name="pasaporte")
+    pasaporte = models.CharField(max_length=15, validators=[pass_regex], verbose_name="pasaporte")
     telefono = models.CharField(blank=True, validators=[telefono_regex], max_length=10, verbose_name="teléfono")
     radio = models.CharField(blank=True, max_length=12, verbose_name="radio")
     celular = models.CharField(blank=True, max_length=10, validators=[telefono_regex], verbose_name="celular")
@@ -207,7 +210,7 @@ class Cliente(models.Model):
     descripcion = models.TextField(verbose_name="descripcion", blank=True)
     tax = models.CharField(max_length=45, verbose_name="tax")
     credito = models.IntegerField(verbose_name="credito")
-    facturacion = models.IntegerField(verbose_name="facturación")
+    facturacion = models.IntegerField(verbose_name="facturación", help_text="Días de facturación")
 
 
     def __str__(self):
@@ -269,6 +272,13 @@ class Servicio(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     importemx = models.FloatField(verbose_name="importe MX")
     importeusd = models.FloatField(verbose_name="importe USD")
+    iva = models.BooleanField(default=False, verbose_name="aplica IVA")
+
+    def __str__(self):
+        try:
+            return str(self.servicio_cruce)
+        except ObjectDoesNotExist:
+            return str(self.servicio_extra)
 
 
 class Servicio_Cruce(Servicio):
@@ -286,7 +296,7 @@ class Servicio_Cruce(Servicio):
     remolque = models.CharField(choices=remolque_choices, max_length=50, verbose_name="remolque")
 
     def __str__(self):
-        return self.tipo
+        return self.get_tipo_display()+" | "+self.get_aduana_display()+" | "+self.get_remolque_display()
 
 class Servicio_Extra(Servicio):
     tipo_choices = (("AGR", "Agricultura"), ("AMA", "Amarres"), ("BAS", "Bascula"), ("CE", "Costo Extraordinario"),
@@ -300,8 +310,9 @@ class Servicio_Extra(Servicio):
                     ("Wal", "Walmart"))
     tipo = models.CharField(choices=tipo_choices, max_length=25, verbose_name="tipo de servicio")
     hlibres = models.IntegerField(verbose_name="horas libres")
+
     def __str__(self):
-        return self.tipo
+        return self.get_tipo_display()
 
 
 class Patio(models.Model):
@@ -326,20 +337,13 @@ class Caja(models.Model):
     fecha_entrada = models.DateTimeField(verbose_name="fecha de entrada")
     fecha_salida = models.DateTimeField(blank=True, verbose_name="fecha de salida")
     observaciones = models.TextField(verbose_name="observaciones")
+    estado = models.BooleanField(default=False)
 
     def __str__(self):
         return self.numero
 
-def get_ruta():
-    filePath = os.path.join(settings.BASE_DIR, 'system\json\op_rutas.json')
-    rutas = json.loads(open(filePath).read())
-    choice = []
-    for c in rutas:
-        choice.append((c['value'], c['ruta']))
-    return choice
-
 class Operacion(models.Model):
-    estado_choices = (("P", "Pendiente autorización"),("I", "Iniciada"),("T", "Terminada"))
+    estado_choices = (("P", "Pendiente autorización"),("I", "Iniciada"),("T", "Terminada"),("C", "Cancelada"))
     id = models.AutoField(primary_key=True)
     servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, verbose_name="servicio")
     fecha = models.DateTimeField(default=timezone.now)
@@ -347,50 +351,43 @@ class Operacion(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, verbose_name="cliente")
     caja = models.ForeignKey(Caja, on_delete=models.PROTECT, verbose_name="caja")
     consignatario = models.ForeignKey(Consignatario, verbose_name="consignatario")
-    origen = models.CharField(max_length=50, choices=get_ruta(), verbose_name="origen")
-    destino = models.CharField(max_length=50, choices=get_ruta(), verbose_name="destino")
+    origen = models.ForeignKey(Patio, related_name="patio_origen", verbose_name="origen")
+    destino = models.ForeignKey(Patio, related_name="patio_destino", verbose_name="destino")
     estado = models.CharField(max_length=20, choices=estado_choices, default="P",  verbose_name="estado operación")
     referencia = models.CharField(max_length=15, verbose_name="referencia")
     pedimento = models.CharField(max_length=15, verbose_name="pedimento")
+    facturada = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 class Evento_Operacion(models.Model):
     evento_choices = (("INIT", "Inicio de Opereción"),("AMXV", "Aduana MX Verde"),("AMXA", "Aduana MX Amarilla"), ("AMXR", "Aduana MX Rojo"), \
         ("AUSV", "Aduana US Verde"),("AUSA", "Aduana US Amarrilla"),("AUSR", "Aduana US Rojo"),("INSP", "Inspección"), \
-        ("RMP", "Rampa"), ("RX", "Rayos X"), ("DOT", "DOT"), ("FDA", "FDA"), ("PAMA", "PAMA"), ("FIN", "Fin Operación"))
+        ("RMP", "Rampa"), ("RX", "Rayos X"), ("DOT", "DOT"), ("FDA", "FDA"), ("PAMA", "PAMA"), ("FIN", "Fin Operación"), ("CAN", "Cancelar Operación"))
     id = models.AutoField(primary_key=True)
     evento = models.CharField(choices=evento_choices, max_length=5, verbose_name="evento")
     operacion = models.ForeignKey(Operacion,on_delete=models.PROTECT, verbose_name="operacion")
-    fecha_inicio = models.DateTimeField(help_text="fecha de inicio")
-    fecha_terminacion = models.DateTimeField(blank=True, null=True, help_text="fecha de terminación")
-    anden = models.CharField(max_length=5, blank=True, verbose_name="anden")
-    vista = models.CharField(max_length=35, blank=True, verbose_name="vista")
-    recibio = models.CharField(max_length=30, blank=True, verbose_name="recibio")
-    observaciones = models.TextField(blank=True, verbose_name="observaciones")
+    fecha_inicio = models.DateTimeField(blank=True, null=True, verbose_name="fecha de inicio")
+    fecha_terminacion = models.DateTimeField(blank=True, null=True, verbose_name="fecha de terminación")
+    anden = models.CharField(max_length=5, blank=True, null=True, verbose_name="anden")
+    vista = models.CharField(max_length=35, blank=True, null=True, verbose_name="vista")
+    recibio = models.CharField(max_length=30, blank=True, null=True, verbose_name="recibio")
+    observaciones = models.TextField(blank=True, null=True, verbose_name="observaciones")
 
     def __str__(self):
         return self.evento
 
-class Concepto(models.Model):
-    concepto_choices = (("AMXV", "Aduana MX Verde"),("AMXA", "Aduana MX Amarilla"), ("AMXR", "Aduana MX Rojo"), \
-        ("AUSV", "Aduana US Verde"),("AUSA", "Aduana US Amarrilla"),("AUSR", "Aduana US Rojo"),("INSP", "Inspección"), \
-        ("RMP", "Rampa"), ("RX", "Rayos X"), ("DOT", "DOT"), ("FDA", "FDA"), ("PAMA", "PAMA"), ("FIN", "Fin Operación"))
+class Concepto_Operacion(models.Model):
+    concepto_choices = (("AMXV", "Aduana MX Verde"), ("AMXA", "Aduana MX Amarilla"), ("AMXR", "Aduana MX Rojo"), \
+                        ("AUSV", "Aduana US Verde"), ("AUSA", "Aduana US Amarrilla"), ("AUSR", "Aduana US Rojo"))
     id = models.AutoField(primary_key=True)
-    concepto = models.CharField(choices=concepto_choices, max_length=5, verbose_name="evento")
+    concepto = models.CharField(choices=concepto_choices, max_length=5, verbose_name="concepto")
+    operacion = models.ForeignKey(Operacion,on_delete=models.PROTECT, verbose_name="operacion")
+    cantidad = models.IntegerField(default=1, verbose_name="cantidad")
     costo_usd = models.FloatField(verbose_name="costo USD")
     costo_mx = models.FloatField(verbose_name="costo MX")
-
-    def __str__(self):
-        return self.concepto
-
-class Concepto_Operacion(models.Model):
-    id = models.AutoField(primary_key=True)
-    concepto = models.ForeignKey(Concepto, on_delete=models.PROTECT,help_text="concepto")
-    operacion = models.ForeignKey(Operacion,on_delete=models.PROTECT, verbose_name="operacion")
-    cantidad = models.IntegerField(blank=True, verbose_name="cantidad")
-    observaciones = models.TextField(blank=True, verbose_name="observaciones")
+    observaciones = models.TextField(blank=True, null=True, verbose_name="observaciones")
 
     def __str__(self):
         return self.concepto
@@ -398,13 +395,33 @@ class Concepto_Operacion(models.Model):
 class Sello_Operacion(models.Model):
     id = models.AutoField(primary_key=True)
     operacion = models.ForeignKey(Operacion, on_delete=models.PROTECT,  verbose_name="operacion" )
-    sello = models.CharField(max_length=50, verbose_name="sello")
-    fecha = models.DateTimeField(help_text="Fecha")
+    sello = models.CharField(max_length=50, unique=True, verbose_name="sello")
+    fecha = models.DateTimeField(verbose_name="Fecha")
     observaciones = models.TextField(blank=True, verbose_name="observaciones")
 
     def __str__(self):
         return self.sello
 
+class Factura(models.Model):
+    id = models.AutoField(primary_key=True)
+    nfactura = models.CharField(max_length=10, unique=True)
+    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
+    fecha = models.DateTimeField(default=timezone.now)
+    expira = models.DateTimeField()
+    pagada = models.BooleanField(default=False)
+    total_usd = models.FloatField(blank=True, null=True, verbose_name="total USD")
+    total_mx = models.FloatField(blank=True, null=True, verbose_name="total MX")
+
+    def __str__(self):
+        return self.nfactura
+
+class Factura_Operacion(models.Model):
+    id = models.AutoField(primary_key=True)
+    factura = models.ForeignKey(Factura, on_delete=models.PROTECT, verbose_name="factura")
+    operacion = models.ForeignKey(Operacion, on_delete=models.PROTECT, verbose_name="operacion")
+
+    def __str__(self):
+        return self.operacion
 
 class Tasa_Cambio(models.Model):
     id = models.AutoField(primary_key=True)
@@ -414,10 +431,3 @@ class Tasa_Cambio(models.Model):
     def __str__(self):
         return self.tasa
 
-class Flujo_Trabajo(models.Model):
-    id = models.AutoField(primary_key=True)
-    fecha = models.DateTimeField()
-    usuario = models.ForeignKey(User)
-    ip = models.GenericIPAddressField()
-    modulo = models.CharField(max_length=250)
-    navegador = models.CharField(max_length=250)

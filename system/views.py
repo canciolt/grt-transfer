@@ -22,6 +22,7 @@ from django.db import models
 from django.shortcuts import render
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.contrib.admin.models import LogEntry
 
 
 
@@ -65,11 +66,11 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
 
     models = {"camion":Camion, "operador":Operador, "reparacion":Reparacion_Camion, \
               "cliente":Cliente, "consignatario":Consignatario, "patio":Patio, "servicio": Servicio_Cruce, \
-              "servicio_ext": Servicio_Extra, "caja": Caja, "operacion":Operacion}
+              "servicio_ext": Servicio_Extra, "caja": Caja, "operacion":Operacion, "factura":Factura}
     forms ={"camion":CamionForm, "operador":OperadorForm, "reparacion":Repcamion_Form, \
             "cliente":Cliente_Form, "consignatario":Consignatario_Form, "patio":Patio_Form, \
             "servicio":Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form,"caja":Caja_Form, \
-            "operacion":Operacion_Form}
+            "operacion":Operacion_Form, "factura":Factura_Form}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -79,7 +80,7 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
             self.model = self.models[kwargs['model']]
             self.form_class = self.forms[kwargs['model']]
             self.template_name = kwargs['model']+"_form.html"
-            if self.models == Servicio_Extra or self.model == Servicio_Cruce:
+            if self.model == Servicio_Extra or self.model == Servicio_Cruce :
                 self.success_url = "/list/servicio"
             else:
                 self.success_url = "/list/"+kwargs['model']
@@ -194,11 +195,15 @@ class Dinamic_Add(SuccessMessageMixin,CreateView):
         if self.model == Operacion:
             s = form.cleaned_data['sello']
             operador = form.cleaned_data['operador']
+            caja = form.cleaned_data['caja']
             with transaction.atomic():
                 operacion = form.save()
                 ope = get_object_or_404(Operador, pk=operador.id)
                 ope.estado=True
                 ope.save()
+                ca = get_object_or_404(Caja, pk=caja.id)
+                ca.estado = True
+                ca.save()
                 sello = Sello_Operacion()
                 sello.operacion = operacion
                 sello.sello = s
@@ -296,6 +301,14 @@ class Dinamic_Update(SuccessMessageMixin,UpdateView):
                     self.success_url = "/detail/cliente/"+str(self.object.cliente.id)
                 else:
                     return super(Dinamic_Update, self).form_invalid(form)
+        if self.model == Operador:
+            operador = get_object_or_404(Operador, pk=self.object.id)
+            camion = get_object_or_404(Camion, pk=form.cleaned_data['camion'].id)
+            with transaction.atomic():
+                operador.camion.estado = 0
+                operador.camion.save()
+                camion.estado = 1
+                camion.save()
         return super(Dinamic_Update, self).form_valid(form)
 
 class Dinamic_List(ListView):
@@ -360,7 +373,12 @@ class Dinamic_Delete(SuccessMessageMixin,DeleteView):
             cliente = get_object_or_404(Consignatario,pk=kwargs['pk']).cliente
             self.success_url = "/detail/cliente/" + str(cliente.id)
         try:
-            return super(Dinamic_Delete, self).delete(request, *args, **kwargs)
+            delete = super(Dinamic_Delete, self).delete(request, *args, **kwargs)
+            if self.model == Operador:
+                operador = get_object_or_404(Operador, pk=kwargs['pk'])
+                operador.camion.estado = 0
+                operador.camion.save()
+            return delete
         except models.ProtectedError:
             messages.add_message(request, messages.ERROR, 'Error al eliminar! dependencias protegidas')
             return redirect(self.success_url)
@@ -406,8 +424,15 @@ class Dinamic_Detail(DetailView):
             context['ubi'] = ubi
             context['si'] = {"smx":smx,"sus":sus,"ins":ins,"ver":ver}
         if self.model == Operacion:
-            sellos = Sello_Operacion.objects.filter(operacion=self.object.id)
+            sellos = Sello_Operacion.objects.filter(operacion=self.object.id).order_by('-fecha')[:1]
+            eventos = Evento_Operacion.objects.filter(operacion=self.object.id).order_by('id')
+            conceptos = Concepto_Operacion.objects.filter(operacion=self.object.id).order_by('id')
             context['sellos'] = sellos
+            context['eventos'] = eventos
+            context['conceptos'] = conceptos
+            context['form_sello'] = Sellos_Form(initial={"operacion":self.object.id})
+            context['form_evento'] = Evento_Form(initial={"operacion": self.object.id})
+            context['form_concepto'] = Concepto_Form(initial={"operacion": self.object.id})
         return context
 
 @method_decorator(login_required, name='dispatch')
@@ -466,3 +491,23 @@ def Add_Exta_Camion(request,model,pk):
     else:
         form = forms[model](initial={'camion_id': pk})
     return render(request, 'vcamion_form.html', {'form': form,'camion':camion,'modelo':model})
+
+
+@login_required
+def get_tasa_cambio(request):
+    try:
+        from suds.client import Client
+        from xml.dom import minidom
+        choice = dict()
+        banxico = Client("http://www.banxico.org.mx:80/DgieWSWeb/DgieWS?WSDL")
+        banxico_request = banxico.service.tiposDeCambioBanxico()
+        xmldoc = minidom.parseString(banxico_request.format(str).encode('utf-8'))
+        itemlist = xmldoc.getElementsByTagName('bm:Series')
+        for s in itemlist:
+            if s.attributes['IDSERIE'].value == 'SF60653':
+                itemlist2 = s.getElementsByTagName('bm:Obs')
+                choice['fecha'] = itemlist2[0].attributes['TIME_PERIOD'].value
+                choice['tasa'] = itemlist2[0].attributes['OBS_VALUE'].value
+        return choice
+    except:
+        return False
