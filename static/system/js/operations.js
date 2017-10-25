@@ -1,4 +1,9 @@
 jQuery(document).ready(function () {
+    if (moneda == "MX") {
+        $('#id_costo_usd').prop('disabled', true);
+    } else if (moneda == "USD") {
+        $('#id_costo_mx').prop('disabled', true);
+    }
     $('#sello-button').click(function () {
         ajaxPost('/ajax/operacion/change_sello/', $("#sello-form").serialize(), function (data) {
             if (data == 1) {
@@ -21,7 +26,25 @@ jQuery(document).ready(function () {
             }
         })
     });
+    $('#concepto-button').click(function () {
+        ajaxPost('/ajax/operacion/concepto_add/', $("#concepto-form").serialize(), function (data) {
+            if (data == 1) {
+                $('#responsive-modal').modal('hide')
+                location.reload()
+            } else {
+                $('#modal-body-concepto').html('');
+                $('#modal-body-concepto').append(data);
+                if (moneda == "MX") {
+                    $('#id_costo_usd').prop('disabled', true);
+                } else if (moneda == "USD") {
+                    $('#id_costo_mx').prop('disabled', true);
+                }
+            }
+        })
+    });
+
 });
+
 function DataTime(id) {
     $("#" + id).datetimepicker({
         language: 'es',

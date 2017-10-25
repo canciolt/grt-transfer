@@ -90,12 +90,13 @@
                         $('#id_servicio').html('');
                         $('#id_consignatario').html('');
                         $('#id_caja').html('');
-                        
+
+                        $("<optgroup label='Servicios de Cruce' id='id_cruce_option'></optgroup>").appendTo("#id_servicio");
                         $.each(content['cruce'], function(i, item) {
-                            $("<optgroup label=\"Servicios de Cruce\"><option value='" +item[0]+ "'>" +item[1]+ "</option></optgroup>").appendTo("#id_servicio");
-                        });
+                            $("<option value='" +item[0]+ "'>" +item[1]+ "</option>").appendTo("#id_cruce_option");});
+                        $("<optgroup label='Servicios Extras' id='id_extra_option'></optgroup>").appendTo("#id_servicio");
                         $.each(content['extra'], function(i, item) {
-                            $("<optgroup label=\"Servicios Extras\"><option value='" +item[0]+ "'>" +item[1]+ "</option></optgroup>").appendTo("#id_servicio");
+                            $("<option value='" +item[0]+ "'>" +item[1]+ "</option>").appendTo("#id_extra_option");
                         });
                         $.each(content['consig'], function(i, item) {
                             $("<option value='" +item[0]+ "'>" +item[1]+ "</option>").appendTo("#id_consignatario");

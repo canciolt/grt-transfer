@@ -94,7 +94,7 @@
                                 class="btn btn-default waves-effect"
                                 data-dismiss="modal">Cerrar
                         </button>
-                        <button id="sello-button" type="button"
+                        <button id="factura-aproved-btn" name="factura-aproved" type="button"
                                 class="btn btn-danger waves-effect waves-light">
                             Aprobar Factura
                         </button>
@@ -110,15 +110,14 @@
           type="text/css"/>
     <link href="/static/system/plugins/bower_components/datatables/jquery.dataTables.min.css" rel="stylesheet"
           type="text/css"/>
+    <link href="/static/system/plugins/bower_components/switchery/dist/switchery.min.css" rel="stylesheet"/>
 {% endblock %}
 {% block js %}
-
+    <script src="/static/system/plugins/bower_components/switchery/dist/switchery.min.js"></script>
     <script src="/static/system/plugins/bower_components/custom-select/custom-select.min.js"
             type="text/javascript"></script>
     <script src="/static/system/plugins/bower_components/blockUI/jquery.blockUI.js"></script>
     <script src="/static/system/plugins/bower_components/datatables/jquery.dataTables.min.js"></script>
-
-
     <script>
         jQuery(document).ready(function () {
             $(".select2").select2();
@@ -139,7 +138,6 @@
                 select: true,
                 dom: 'Bfrtip',
                 order: [[1, "desc"]],
-
             });
 
             $("#id_cliente").change(function () {
@@ -155,7 +153,7 @@
             });
 
 
-            $('#btn-factura').click(function () {
+            $('#btn-factura, #factura-aproved-btn').click(function () {
                 var cantop = 0;
                 var op = []
                 $("table#id_operaciones tbody tr").each(function () {
@@ -169,20 +167,33 @@
                 });
                 if ($("#id_cliente").val()) {
                     if (cantop > 0) {
-                        ajaxPost('/ajax/factura/facturar/', {
-                            "cliente": $("#id_cliente").val(),
-                            "operaciones": JSON.stringify(op)
-                        }, function (content) {
-                            $('#modal-body-factura').html('');
-                            $('#modal-body-factura').html(content);
-                            $('#factura-modal').modal()
-                        })
+                        if ($(this).prop('name') == 'factura-aproved') {
+                            ajaxPost('/ajax/factura/facturar/', {
+                                "cliente": $("#id_cliente").val(),
+                                "operaciones": JSON.stringify(op),
+                                "approved": true,
+                                "is_fmxn": $("#id-is-fmxn").prop("checked")
+                            }, function (content) {
+                                alert(content);
+                            })
+                        } else {
+                            ajaxPost('/ajax/factura/facturar/', {
+                                "cliente": $("#id_cliente").val(),
+                                "operaciones": JSON.stringify(op)
+                            }, function (content) {
+                                $('#modal-body-factura').html('');
+                                $('#modal-body-factura').html(content);
+                                $('#factura-modal').modal()
+                            })
+                        }
                     } else {
                         swal("Atención!", "Debe seleccionar al menos una operación para poder facturar.")
                     }
-                }else{
+                } else {
                     swal("Atención!", "Debe seleccionar un cliente para poder facturar.")
                 }
+
+
             });
 
 

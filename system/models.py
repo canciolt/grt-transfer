@@ -379,15 +379,12 @@ class Evento_Operacion(models.Model):
         return self.evento
 
 class Concepto_Operacion(models.Model):
-    concepto_choices = (("AMXV", "Aduana MX Verde"), ("AMXA", "Aduana MX Amarilla"), ("AMXR", "Aduana MX Rojo"), \
-                        ("AUSV", "Aduana US Verde"), ("AUSA", "Aduana US Amarrilla"), ("AUSR", "Aduana US Rojo"))
     id = models.AutoField(primary_key=True)
-    concepto = models.CharField(choices=concepto_choices, max_length=5, verbose_name="concepto")
+    concepto = models.CharField(max_length=50, verbose_name="concepto")
     operacion = models.ForeignKey(Operacion,on_delete=models.PROTECT, verbose_name="operacion")
-    cantidad = models.IntegerField(default=1, verbose_name="cantidad")
     costo_usd = models.FloatField(verbose_name="costo USD")
     costo_mx = models.FloatField(verbose_name="costo MX")
-    observaciones = models.TextField(blank=True, null=True, verbose_name="observaciones")
+    observaciones = models.TextField(verbose_name="observaciones")
 
     def __str__(self):
         return self.concepto
@@ -403,6 +400,7 @@ class Sello_Operacion(models.Model):
         return self.sello
 
 class Factura(models.Model):
+    estado_choices = (("A", "Abierta"), ("C", "Cerrada"), ("P", "Pagada"))
     id = models.AutoField(primary_key=True)
     nfactura = models.CharField(max_length=10, unique=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
@@ -411,6 +409,9 @@ class Factura(models.Model):
     pagada = models.BooleanField(default=False)
     total_usd = models.FloatField(blank=True, null=True, verbose_name="total USD")
     total_mx = models.FloatField(blank=True, null=True, verbose_name="total MX")
+    estado = models.CharField(choices=estado_choices, default='A', max_length=1)
+    tasa_cambio = models.FloatField(blank=True)
+    observaciones = models.TextField(blank=True, verbose_name="observaciones")
 
     def __str__(self):
         return self.nfactura

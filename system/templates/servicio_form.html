@@ -8,7 +8,7 @@
             <div class="panel panel-info">
                 <div class="panel-wrapper collapse in" aria-expanded="true">
                     <div class="panel-body">
-                        <form action="" data-toggle="validator" method="post">{% csrf_token %}
+                        <form id="form_servicio_id" action="" data-toggle="validator" method="post">{% csrf_token %}
                             <div class="form-body">
                                 <h3 class="box-title">{% if accion == 'update' %}Editar Servicio{% else %}Agregar
                                     Servicio{% endif %}</h3>
@@ -41,8 +41,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {% if  field.name == "importemx" %}
-                                                    <div id="cont-importemx"
-                                                         style="visibility: hidden; position: absolute;">
+                                                    <div id="cont-importemx">
                                                         <label class="control-label">{{ field.label_tag }}</label>
                                                         <div class="input-group" style="margin-bottom: 25px;"> <span
                                                                 class="input-group-btn">
@@ -51,20 +50,10 @@
                                                                   class="fa fa-dollar"></i></button>
                                                           </span>
                                                             {{ field }}
-                                                            {% if field.errors %}
-                                                                {% for f in field.errors %}
-                                                                    <span class="alert-block"><small>{{ f|safe }}</small></span>
-                                                                {% endfor %}
-                                                            {% else %}
-                                                                {% if field.help_text %}
-                                                                    <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                                                                {% endif %}
-                                                            {% endif %}
                                                         </div>
                                                     </div>
                                                 {% elif  field.name == "importeusd" %}
-                                                    <div id="cont-importeusd"
-                                                         style="visibility: hidden; position: absolute;">
+                                                    <div id="cont-importeusd">
                                                         <label class="control-label">{{ field.label_tag }}</label>
                                                         <div class="input-group" style="margin-bottom: 25px;"> <span
                                                                 class="input-group-btn">
@@ -73,28 +62,19 @@
                                                                   class="fa fa-dollar"></i></button>
                                                           </span>
                                                             {{ field }}
-                                                            {% if field.errors %}
-                                                                {% for f in field.errors %}
-                                                                    <span class="alert-block"><small>{{ f|safe }}</small></span>
-                                                                {% endfor %}
-                                                            {% else %}
-                                                                {% if field.help_text %}
-                                                                    <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                                                                {% endif %}
-                                                            {% endif %}
                                                         </div>
                                                     </div>
                                                 {% else %}
                                                     <label class="control-label">{{ field.label_tag }}</label>
                                                     {{ field }}
-                                                    {% if field.errors %}
-                                                        {% for f in field.errors %}
-                                                            <span class="alert-block"><small>{{ f|safe }}</small></span>
-                                                        {% endfor %}
-                                                    {% else %}
-                                                        {% if field.help_text %}
-                                                            <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                                                        {% endif %}
+                                                {% endif %}
+                                                {% if field.errors %}
+                                                    {% for f in field.errors %}
+                                                        <span class="alert-block"><small>{{ f|safe }}</small></span>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    {% if field.help_text %}
+                                                        <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
                                                     {% endif %}
                                                 {% endif %}
                                             </div>
@@ -132,13 +112,13 @@
             type="text/javascript"></script>
     <script>
         jQuery(document).ready(function () {
-            if ($("#id_importemx").val() != 0) {
+            if ($("#id_importemx").val() > 0) {
                 $("#id_importemx").prop('disabled', false)
                 $("#moneda-mxn").prop('checked', true)
             }
-            if ($("#id_importeusd").val() != 0) {
+            if ($("#id_importeusd").val() > 0) {
                 $("#id_importeusd").prop('disabled', false)
-                $("#moneda-mxn").prop('checked', true)
+                $("#moneda-usd").prop('checked', true)
             }
             $('.js-switch').each(function () {
                 new Switchery($(this)[0], $(this).data());
@@ -148,15 +128,22 @@
 
         function habilita_pago(option) {
             if (option.val() == 'MXN') {
-                $("#cont-importeusd").prop('style', 'visibility: hidden; position: absolute;');
-                $("#cont-importeusd").prop('value', 0);
-                $("#cont-importemx").prop('style', '');
+                $("#id_importeusd").prop('disabled', true);
+                $("#id_importeusd").prop('value', 0);
+                $("#id_importemx").prop('disabled', false);
             } else if (option.val() == 'USD') {
-                $("#cont-importemx").prop('style', 'visibility: hidden; position: absolute;');
-                $("#cont-importemx").prop('value', 0);
-                $("#cont-importeusd").prop('style', '');
+                $("#id_importemx").prop('disabled', true);
+                $("#id_importemx").prop('value', 0);
+                $("#id_importeusd").prop('disabled', false);
             }
         }
+
+        $("#form_servicio_id").submit(function (event) {
+                $("#id_importemx").prop('disabled', false);
+                $("#id_importeusd").prop('disabled', false);
+            return;});
+
+
 
     </script>
 {% endblock %}

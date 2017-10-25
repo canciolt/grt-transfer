@@ -8,12 +8,15 @@ from datetime import datetime
 
 class CamionForm(forms.ModelForm):
     tipo_choices = (("0", "Libre"), ("2", "Arrendado"))
-    estado = forms.ChoiceField(choices=tipo_choices, widget=forms.Select(attrs={'class': 'form-control', 'required': ''}))
+    estado = forms.ChoiceField(choices=tipo_choices,
+                               widget=forms.Select(attrs={'class': 'form-control', 'required': ''}))
+
     def __init__(self, *args, **kwargs):
         super(CamionForm, self).__init__(*args, **kwargs)
         if kwargs['instance']:
             if kwargs['instance'].estado == '1':
                 del self.fields['estado']
+
     class Meta:
         model = Camion
         fields = ['numero', 'marca', 'modelo', 'serie', 'millaje', \
@@ -39,7 +42,7 @@ class OperadorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(OperadorForm, self).__init__(*args, **kwargs)
         if kwargs['instance']:
-            self.fields['camion'].queryset = Camion.objects.filter(estado=0, expira_circulacion__gt=datetime.now())\
+            self.fields['camion'].queryset = Camion.objects.filter(estado=0, expira_circulacion__gt=datetime.now()) \
                                              | Camion.objects.filter(id=kwargs['instance'].camion.id)
         else:
             self.fields['camion'].queryset = Camion.objects.filter(estado=0, expira_circulacion__gt=datetime.now())
@@ -182,6 +185,7 @@ class ORepcamion_Form(forms.ModelForm):
             'tipo_pago': forms.Select(attrs={'class': 'form-control', 'required': ''}),
         }
 
+
 class Sellos_Form(forms.ModelForm):
     class Meta:
         model = Sello_Operacion
@@ -191,7 +195,7 @@ class Sellos_Form(forms.ModelForm):
             'sello': forms.TextInput(attrs={'class': 'form-control', 'required': ''}),
             'fecha': forms.DateTimeInput(
                 attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
-                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover":"DataTime(this.id);"}),
+                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover": "DataTime(this.id);"}),
             'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'cols': 4}),
         }
 
@@ -203,6 +207,7 @@ class Sellos_Form(forms.ModelForm):
             if fecha_ant > 0:
                 self.add_error('fecha', 'La fecha debe ser mayor a la del sello anterior.')
 
+
 class Evento_Form(forms.ModelForm):
     evento_choices = (("", "---------"), ("AMXV", "Aduana MX Verde"), ("AMXA", "Aduana MX Amarilla"),
                       ("AMXR", "Aduana MX Rojo"), \
@@ -211,19 +216,22 @@ class Evento_Form(forms.ModelForm):
                       ("RMP", "Rampa"), ("RX", "Rayos X"), ("DOT", "DOT"), ("FDA", "FDA"), ("PAMA", "PAMA"),
                       ("FIN", "Fin Operación"), ("CAN", "Cancelar Operación"))
     evento = forms.ChoiceField(choices=evento_choices, widget=forms.Select(attrs={ \
-        'class': 'form-control', 'required': '', "onchange":"evento_select(this.value);"}))
+        'class': 'form-control', 'required': '', "onchange": "evento_select(this.value);"}))
+
     class Meta:
         model = Evento_Operacion
-        fields = ['operacion', 'evento', 'fecha_inicio','fecha_terminacion', 'anden', 'vista', 'recibio', 'observaciones']
+        fields = ['operacion', 'evento', 'fecha_inicio', 'fecha_terminacion', 'anden', 'vista', 'recibio',
+                  'observaciones']
         widgets = {
             'operacion': forms.TextInput(attrs={'style': 'visibility:hidden; position:absolute;'}),
-            'evento': forms.Select(attrs={'class': 'form-control', 'required': '', "onchange":"evento_select(this.value);"}),
+            'evento': forms.Select(
+                attrs={'class': 'form-control', 'required': '', "onchange": "evento_select(this.value);"}),
             'fecha_inicio': forms.DateTimeInput(
                 attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
-                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover":"DataTime(this.id);"}),
+                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover": "DataTime(this.id);"}),
             'fecha_terminacion': forms.DateTimeInput(
                 attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
-                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover":"DataTime(this.id);"}),
+                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover": "DataTime(this.id);"}),
             'anden': forms.TextInput(attrs={'class': 'form-control'}),
             'vista': forms.TextInput(attrs={'class': 'form-control'}),
             'recibio': forms.TextInput(attrs={'class': 'form-control'}),
@@ -260,26 +268,33 @@ class Evento_Form(forms.ModelForm):
         if events > 0:
             self.add_error('evento', 'Ya existe este evento en la operación')
         try:
-            f_inicio = Evento_Operacion.objects.filter(fecha_inicio__gte=cleaned_data.get('fecha_inicio'), operacion=operacion).count()
+            f_inicio = Evento_Operacion.objects.filter(fecha_inicio__gte=cleaned_data.get('fecha_inicio'),
+                                                       operacion=operacion).count()
             if f_inicio > 0:
                 self.add_error('fecha_inicio', 'La fecha tiene que ser posterior a eventos anteriores')
         except:
             pass
 
+
 class Concepto_Form(forms.ModelForm):
     class Meta:
         model = Concepto_Operacion
-        fields = ['operacion', 'concepto', 'cantidad', 'costo_mx','costo_usd', 'observaciones']
+        fields = ['operacion', 'costo_mx', 'costo_usd', 'concepto', 'observaciones']
         widgets = {
             'operacion': forms.TextInput(attrs={'style': 'visibility:hidden; position:absolute;'}),
-            'concepto': forms.Select(attrs={'class': 'form-control', 'required': '', "onchange":"concepto_select(this.value);"}),
-            'costo_usd': forms.TextInput(attrs={'class': 'form-control'}),
-            'costo_mx': forms.TextInput(attrs={'class': 'form-control'}),
-            'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
+            'concepto': forms.TextInput(attrs={'class': 'form-control'}),
+            'costo_usd': forms.TextInput(attrs={'class': 'form-control', 'value': 0}),
+            'costo_mx': forms.TextInput(attrs={'class': 'form-control', 'value': 0}),
             'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'cols': 4}),
         }
 
-
+    def clean(self):
+        cleaned_data = super(Concepto_Form, self).clean()
+        con = cleaned_data.get('concepto')
+        operacion = cleaned_data.get('operacion')
+        concepto = Concepto_Operacion.objects.filter(concepto=con, operacion=operacion).count()
+        if concepto > 0:
+            self.add_error('evento', 'Ya existe este concepto para esta operación')
 
 class User_Form(forms.ModelForm):
     class Meta:
@@ -405,7 +420,6 @@ class Caja_Form(forms.ModelForm):
 
 
 class Servicio_Cruce_Form(forms.ModelForm):
-
     class Meta:
         model = Servicio_Cruce
         fields = ['cliente', 'tipo', 'aduana', 'remolque', 'importemx', 'importeusd', 'iva']
@@ -414,8 +428,8 @@ class Servicio_Cruce_Form(forms.ModelForm):
             'tipo': forms.Select(attrs={'class': 'form-control select2'}),
             'aduana': forms.Select(attrs={'class': 'form-control select2'}),
             'remolque': forms.Select(attrs={'class': 'form-control select2'}),
-            'importemx': forms.TextInput(attrs={'class': 'form-control', 'disabled':''}),
-            'importeusd': forms.TextInput(attrs={'class': 'form-control', 'disabled':''}),
+            'importemx': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', 'value': 0}),
+            'importeusd': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', 'value': 0}),
             'iva': forms.CheckboxInput(
                 attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
         }
@@ -424,9 +438,13 @@ class Servicio_Cruce_Form(forms.ModelForm):
         cleaned_data = super(Servicio_Cruce_Form, self).clean()
         importemx = cleaned_data.get('importemx')
         importeusd = cleaned_data.get('importeusd')
-        if importemx == None and importeusd == None :
+        iva = cleaned_data.get('iva')
+        if importemx == 0 and importeusd == 0:
             self.add_error('importemx', 'Debe intoducir un importe al servicio')
             self.add_error('importeusd', 'Debe intoducir un importe al servicio')
+        if iva == True and importeusd > 0:
+            self.add_error('importeusd', 'El IVA solo solo se aplica a importe en pesos mexicanos')
+
 
 
 
@@ -438,19 +456,30 @@ class Servicio_Extra_Form(forms.ModelForm):
             'cliente': forms.Select(attrs={'class': 'form-control select2'}),
             'tipo': forms.Select(attrs={'class': 'form-control select2'}),
             'hlibres': forms.NumberInput(attrs={'class': 'form-control'}),
-            'importemx': forms.TextInput(attrs={'class': 'form-control'}),
-            'importeusd': forms.TextInput(attrs={'class': 'form-control'}),
+            'importemx': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', 'value': 0}),
+            'importeusd': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', 'value': 0}),
             'iva': forms.CheckboxInput(
                 attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
         }
 
+    def clean(self):
+        cleaned_data = super(Servicio_Extra_Form, self).clean()
+        importemx = cleaned_data.get('importemx')
+        importeusd = cleaned_data.get('importeusd')
+        if importemx == 0 and importeusd == 0:
+            self.add_error('importemx', 'Debe intoducir un importe al servicio')
+            self.add_error('importeusd', 'Debe intoducir un importe al servicio')
+
+
 class Operacion_Form(forms.ModelForm):
     sello = forms.CharField(label=u"Sello", widget=forms.TextInput(
         attrs={'class': 'form-control'}))
+
     def __init__(self, *args, **kwargs):
         super(Operacion_Form, self).__init__(*args, **kwargs)
         self.fields['operador'].queryset = Operador.objects.filter(estado=False, visa_expira__gt=datetime.now(), \
-                                                                   fast_expira__gt=datetime.now(), licencia_expira__gt=datetime.now())
+                                                                   fast_expira__gt=datetime.now(),
+                                                                   licencia_expira__gt=datetime.now())
         self.fields['cliente'].queryset = Cliente.objects.filter(usuario__is_active=True)
 
     class Meta:

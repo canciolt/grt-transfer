@@ -5,7 +5,7 @@
             <div class="panel panel-info">
                 <div class="panel-wrapper collapse in" aria-expanded="true">
                     <div class="panel-body">
-                        <form action="" data-toggle="validator" method="post">{% csrf_token %}
+                        <form id="form_servicio_id" action="" data-toggle="validator" method="post">{% csrf_token %}
                             <div class="form-body">
                                 <h3 class="box-title">{% if accion == 'update' %}Editar Servicio{% else %}Agregar
                                     Servicio{% endif %}</h3>
@@ -38,24 +38,28 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {% if  field.name == "importemx" %}
-                                                    <label class="control-label">{{ field.label_tag }}</label>
-                                                    <div class="input-group" style="margin-bottom: 25px;"> <span
-                                                            class="input-group-btn">
+                                                    <div id="cont-importemx">
+                                                        <label class="control-label">{{ field.label_tag }}</label>
+                                                        <div class="input-group" style="margin-bottom: 25px;"> <span
+                                                                class="input-group-btn">
                                                           <button type="button"
                                                                   class="btn waves-effect waves-light btn-info"><i
                                                                   class="fa fa-dollar"></i></button>
                                                           </span>
-                                                        {{ field }}
+                                                            {{ field }}
+                                                        </div>
                                                     </div>
                                                 {% elif  field.name == "importeusd" %}
-                                                    <label class="control-label">{{ field.label_tag }}</label>
-                                                    <div class="input-group" style="margin-bottom: 25px;"> <span
-                                                            class="input-group-btn">
+                                                    <div id="cont-importeusd">
+                                                        <label class="control-label">{{ field.label_tag }}</label>
+                                                        <div class="input-group" style="margin-bottom: 25px;"> <span
+                                                                class="input-group-btn">
                                                           <button type="button"
                                                                   class="btn waves-effect waves-light btn-info"><i
                                                                   class="fa fa-dollar"></i></button>
                                                           </span>
-                                                        {{ field }}
+                                                            {{ field }}
+                                                        </div>
                                                     </div>
                                                 {% else %}
                                                     <label class="control-label">{{ field.label_tag }}</label>
@@ -105,12 +109,14 @@
             type="text/javascript"></script>
     <script>
         jQuery(document).ready(function () {
-            if ($("#id_importemx").val() != 0) {
+            if ($("#id_importemx").val() > 0) {
                 $("#id_importemx").prop('disabled', false)
-                $("#moneda-mxn").prop('checked', true)}
-            if ($("#id_importeusd").val() != 0) {
+                $("#moneda-mxn").prop('checked', true)
+            }
+            if ($("#id_importeusd").val() > 0) {
                 $("#id_importeusd").prop('disabled', false)
-                $("#moneda-usd").prop('checked', true)}
+                $("#moneda-usd").prop('checked', true)
+            }
             $('.js-switch').each(function () {
                 new Switchery($(this)[0], $(this).data());
             });
@@ -119,15 +125,22 @@
 
         function habilita_pago(option) {
             if (option.val() == 'MXN') {
-                $("#id_importemx").prop('disabled', false);
                 $("#id_importeusd").prop('disabled', true);
                 $("#id_importeusd").prop('value', 0);
+                $("#id_importemx").prop('disabled', false);
             } else if (option.val() == 'USD') {
                 $("#id_importemx").prop('disabled', true);
                 $("#id_importemx").prop('value', 0);
                 $("#id_importeusd").prop('disabled', false);
             }
         }
+
+        $("#form_servicio_id").submit(function (event) {
+                $("#id_importemx").prop('disabled', false);
+                $("#id_importeusd").prop('disabled', false);
+            return;});
+
+
 
     </script>
 {% endblock %}

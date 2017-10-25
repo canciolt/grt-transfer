@@ -1,5 +1,4 @@
 {% load staticfiles %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,8 +17,6 @@
    <!-- animation CSS -->
     <link href="{% static "system/css/animate.css" %}" rel="stylesheet">
     <link href="{% static "system/css/style.css" %}" rel="stylesheet">
-                              
-
     <link href="{% static "system/css/colors/megna.css" %}" id="theme" rel="stylesheet">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -31,18 +28,13 @@
 </head>
 
 <body>
-
 <!-- Preloader -->
     <div class="preloader">
         <div class="cssload-speeding-wheel"></div>
     </div>
-	
 	<div id="wrapper">
-	
 	{% include "header.html" %}
-	
 	{% include "menu.html" %}
-	
 	<!-- Page Content -->
         <div id="page-wrapper">
             <div class="container-fluid">
@@ -59,9 +51,7 @@
                 </div>
                 <!-- Main-Content -->
                         {% block main-content %}{% endblock %}
-				
                 <!-- End-Main-Content -->
-				
 				{% include "panel.html" %}
 				
 			</div>

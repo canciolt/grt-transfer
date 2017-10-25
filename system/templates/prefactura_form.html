@@ -2,7 +2,7 @@
 <div class="row">
     <div class="col-md-12">
         <div class="white-box">
-            <h3><b>FACTURA</b> <span class="pull-right">#5669626</span></h3>
+            <h3><b>PREFACTURA</b> <span class="pull-right"></span></h3>
             <hr>
             <div class="row">
                 <div class="col-md-12">
@@ -21,13 +21,21 @@
                             <p class="text-muted m-l-30">{{ cliente.direccion }} <br/>
                                 {{ cliente.estado }} - {{ cliente.cpostal }}, <br/>
                                 {{ cliente.get_pais_display }}</p>
-                            <p class="m-t-30"><b>Invoice Date :</b> <i class="fa fa-calendar"></i> 23rd Jan 2017</p>
-                            <p><b>Due Date :</b> <i class="fa fa-calendar"></i> 25th Jan 2017</p>
+                            <!--      <p class="m-t-30"><b>Invoice Date :</b> <i class="fa fa-calendar"></i> 23rd Jan 2017</p>
+                                  <p><b>Due Date :</b> <i class="fa fa-calendar"></i> 25th Jan 2017</p> -->
                         </address>
                     </div>
                 </div>
+
                 <div class="col-md-12">
-                <h3 class="box-title m-b-0">Operaciones</h3>
+                    {% if totalusd > 0 %}
+                        <div class="pull-right text-right">
+                            <label class="control-label m-r-10">Facturar en pesos mexicanos: </label>
+                            <input type="checkbox" id="id-is-fmxn" class="js-switch" data-color="#99d683"
+                                   data-size="small"/>
+                        </div>
+                    {% endif %}
+                    <h3 class="box-title m-b-0">Operaciones</h3>
                     <div class="table-responsive m-t-0">
                         <table class="table table-hover">
                             <thead>
@@ -36,8 +44,8 @@
                                 <th class="text-center">Fecha</th>
                                 <th class="text-center">Servivio</th>
                                 <th class="text-center">IVA</th>
-                                <th class="text-right">Importe USD</th>
                                 <th class="text-right">Importe MX</th>
+                                <th class="text-right">Importe USD</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -46,9 +54,11 @@
                                     <td class="text-center">{{ l.id }}</td>
                                     <td class="text-center">{{ l.fecha|date:"D d M Y" }}</td>
                                     <td class="text-center">{{ l.servicio }}</td>
-                                    <td class="text-center">{% if l.servicio.iva %}<i class="fa fa-check-square-o text-success"></i>{% else %}<i class="fa fa-times-circle text-danger">{% endif %}</td>
-                                    <td class="text-center">{{ l.importeusd }}</td>
+                                    <td class="text-center">{% if l.servicio.iva %}
+                                        <i class="fa fa-check-square-o text-success"></i>{% else %}
+                                        <i class="fa fa-times-circle text-danger">{% endif %}</td>
                                     <td class="text-center">{{ l.importemxn }}</td>
+                                    <td class="text-center">{{ l.importeusd }}</td>
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -56,14 +66,55 @@
                     </div>
                 </div>
                 <div class="col-md-12">
-                    <div class="pull-right m-t-30 text-right">
-                        <p>Sub - Total amount: $1600</p>
-                        <p>vat (10%) : $160 </p>
+                    <div id="resume-usd-div" class="pull-right m-t-30 text-right">
+                        <p>Sub - Total USD: $ {{ subtotalusd }}</p>
+                        <p>IVA (16%) : $ 0.0 </p>
                         <hr>
-                        <h3><b>Total :</b> $1760</h3></div>
-                    <div class="clearfix"></div>
+                        <h3><b>Total USD :</b> $ {{ totalusd }}</h3></div>
+
+                    <div id="resume-mnx-div" class="pull-right m-t-30 m-r-30 text-right">
+                        <p>Sub - Total MXN: $ {{ subtotalmx }}</p>
+                        <p>IVA (16%) : $ {{ iva }} </p>
+                        <hr>
+                        <h3><b>Total MXN :</b> $ {{ totalmx }}</h3></div>
+                    <div style="margin: 50px;"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script type="application/javascript">
+    // Switchery
+    var elems = Array.prototype.slice.call(document.querySelectorAll('.js-switch'));
+    $('.js-switch').each(function () {
+        new Switchery($(this)[0], $(this).data());
+    });
+    {% if totalusd > 0 %}
+        $("#id-is-fmxn").change(function () {
+            if ($(this).prop("checked") == true) {
+                $("#resume-usd-div").hide();
+                ajaxPost('/ajax/system/get_tasa_cambio/', function (content) {
+                    if (content != false) {
+                        var tasa = content['tasa']
+                        var iva = '{{ iva }}'
+                        var subtotalmx = '{{ subtotalmx }}'
+                        var totalusd = '{{ totalusd }}'
+                        var chage_usd_mxn = parseFloat(totalusd) * parseFloat(tasa)
+                        var subtotalmx_end = parseFloat(subtotalmx) + chage_usd_mxn
+                        var totalmx = parseFloat(subtotalmx) + parseFloat(iva) + chage_usd_mxn
+                        $("#resume-mnx-div").html('')
+                        $("#resume-mnx-div").html("<p>Sub - Total MXN: $ " + subtotalmx_end + "</p><p>IVA (16%) : $ " + iva +
+                            "</p><p>Tasa de cambio: $ " + tasa + "</p><hr><h3><b>Total MXN :</b> $" + totalmx + "</h3></div><div style='margin: 50px;'></div>")
+                    }else{swal("Error!", "Tasa no disponible. Por facor contacte al administrador.")}
+                });
+            } else {
+                $("#resume-usd-div").show()
+                $("#resume-mnx-div").html('')
+                    $("#resume-mnx-div").html("<p>Sub - Total MXN: $ {{ subtotalmx }} </p><p>IVA (16%) : $ {{ iva }}" +
+                        "</p><hr><h3><b>Total MXN :</b> $ {{ totalmx }} </h3></div><div style='margin: 50px;'></div>")
+
+            }
+        });
+    {% endif %}
+</script>

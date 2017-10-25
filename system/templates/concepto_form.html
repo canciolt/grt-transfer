@@ -1,88 +1,8 @@
-<form action="" id="evento-form" data-toggle="validator" method="post">{% csrf_token %}
+<form action="" id="concepto-form" data-toggle="validator" method="post">{% csrf_token %}
     <div class="row">
         {% for field in form_concepto %}
             {% if field.name == "operacion" %}
                 {{ field }}
-            {% elif  field.name == "anden" %}
-                <div class="col-md-6" id="div-anden" {% if field.value == None or not field.value and not field.errors %}style="display: none;"{% endif %}>
-                    <div class="form-group">
-                        <label class="control-label">{{ field.label_tag }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                            {% for f in field.errors %}
-                                <span class="alert-block"><small>{{ f|safe }}</small></span>
-                            {% endfor %}
-                        {% else %}
-                            {% if field.help_text %}
-                                <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-            {% elif  field.name == "vista" %}
-                <div class="col-md-6" id="div-vista" {% if field.value == None or not field.value and not field.errors %}style="display: none;"{% endif %}>
-                    <div class="form-group">
-                        <label class="control-label">{{ field.label_tag }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                            {% for f in field.errors %}
-                                <span class="alert-block"><small>{{ f|safe }}</small></span>
-                            {% endfor %}
-                        {% else %}
-                            {% if field.help_text %}
-                                <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-            {% elif  field.name == "recibio" %}
-                <div class="col-md-6" id="div-recibio" {% if field.value == None or not field.value and not field.errors %}style="display: none;"{% endif %}>
-                    <div class="form-group">
-                        <label class="control-label">{{ field.label_tag }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                            {% for f in field.errors %}
-                                <span class="alert-block"><small>{{ f|safe }}</small></span>
-                            {% endfor %}
-                        {% else %}
-                            {% if field.help_text %}
-                                <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-            {% elif  field.name == "fecha_terminacion" %}
-                <div class="col-md-6" id="div-fecha_terminacion" {% if field.value == None or not field.value and not field.errors %}style="display: none;"{% endif %}>
-                    <div class="form-group">
-                        <label class="control-label">{{ field.label_tag }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                            {% for f in field.errors %}
-                                <span class="alert-block"><small>{{ f|safe }}</small></span>
-                            {% endfor %}
-                        {% else %}
-                            {% if field.help_text %}
-                                <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-                {% elif  field.name == "fecha_inicio" %}
-                <div class="col-md-6" id="div-fecha_inicio" {% if field.value == None or not field.value and not field.errors %}style="display: none;"{% endif %}>
-                    <div class="form-group">
-                        <label class="control-label">{{ field.label_tag }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                            {% for f in field.errors %}
-                                <span class="alert-block"><small>{{ f|safe }}</small></span>
-                            {% endfor %}
-                        {% else %}
-                            {% if field.help_text %}
-                                <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
-                            {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
             {% else %}
                 <div class="col-md-6">
                     <div class="form-group">

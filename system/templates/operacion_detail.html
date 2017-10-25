@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load staticfiles %}
-
 {% block main-content %}
     <div class="row">
         <div class="col-md-12">
@@ -135,42 +134,43 @@
                                                         <div class="modal-body" id="modal-body-sello">
                                                             {% include 'sellos_form.html' %}
                                                         </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button"
-                                                                        class="btn btn-default waves-effect"
-                                                                        data-dismiss="modal">Cerrar
-                                                                </button>
-                                                                <button id="sello-button" type="button"
-                                                                        class="btn btn-danger waves-effect waves-light">
-                                                                    Agregar
-                                                                </button>
-                                                            </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button"
+                                                                    class="btn btn-default waves-effect"
+                                                                    data-dismiss="modal">Cerrar
+                                                            </button>
+                                                            <button id="sello-button" type="button"
+                                                                    class="btn btn-danger waves-effect waves-light">
+                                                                Agregar
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                                <p class="form-control-static">
-                                                    {% for s in sellos %}
-                                                        <a class="mytooltip" style="z-index: 100 !important;" href="javascript:void(0)"> <i
-                                                                class="fa fa-fw fa-bullseye"></i>{{ s }} <span
-                                                                class="tooltip-content3">{{ s.observaciones }}</br>{{ s.fecha|date:"d/m/o" }}</span>
-                                                        </a>,
-                                                    {% endfor %}
+                                            <p class="form-control-static">
+                                                {% for s in sellos %}
+                                                    <a class="mytooltip" style="z-index: 100 !important;"
+                                                       href="javascript:void(0)"> <i
+                                                            class="fa fa-fw fa-bullseye"></i>{{ s }} <span
+                                                            class="tooltip-content3">{{ s.observaciones }}</br>{{ s.fecha|date:"d/m/o" }}</span>
+                                                    </a>,
+                                                {% endfor %}
                                                 {% if object.estado != "T" and object.estado != "C" %}
                                                     <a href="javascript:void(0)" data-toggle="modal" alt="default"
                                                        data-target="#sello-modal"> <i
                                                             class="fa fa-plus text-success m-r-10"></i> </a>
                                                 {% endif %}
-                                                </p>
-                                            </div>
+                                            </p>
                                         </div>
                                     </div>
-                                    <!--/span-->
                                 </div>
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <div class="white-box">
-                                            <h3 class="box-title">Eventos de operación</h3>
-                                        {% if object.estado != "T" and object.estado != "C"   %}
+                                <!--/span-->
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="white-box">
+                                        <h3 class="box-title">Eventos de operación</h3>
+                                        {% if object.estado != "T" and object.estado != "C" %}
                                             <div id="evento-modal" class="modal fade" tabindex="-1" role="dialog"
                                                  aria-labelledby="myModalLabel"
                                                  aria-hidden="true" style="display: none;">
@@ -184,57 +184,65 @@
                                                         <div class="modal-body" id="modal-body-evento">
                                                             {% include 'evento_form.html' %}
                                                         </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button"
-                                                                        class="btn btn-default waves-effect"
-                                                                        data-dismiss="modal">Cerrar
-                                                                </button>
-                                                                <button id="evento-button" type="button"
-                                                                        class="btn btn-danger waves-effect waves-light">
-                                                                    Agregar
-                                                                </button>
-                                                            </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button"
+                                                                    class="btn btn-default waves-effect"
+                                                                    data-dismiss="modal">Cerrar
+                                                            </button>
+                                                            <button id="evento-button" type="button"
+                                                                    class="btn btn-danger waves-effect waves-light">
+                                                                Agregar
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        <div class="button-box text-right">
-                                            <button class="btn btn-success waves-effect waves-light" type="button" data-toggle="modal" alt="default"
-                                                       data-target="#evento-modal">
-                                                <span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Evento
-                                            </button>
-                                        </div>
+                                            <div class="button-box text-right">
+                                                <button class="btn btn-success waves-effect waves-light" type="button"
+                                                        data-toggle="modal" alt="default"
+                                                        data-target="#evento-modal">
+                                                    <span class="btn-label"><i class="fa fa-plus"></i></span>Agregar
+                                                    Evento
+                                                </button>
+                                            </div>
                                         {% endif %}
-                                            <div class="table-responsive">
-                                                <table class="table">
-                                                    <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Evento</th>
-                                                        <th>Inicio</th>
-                                                        <th>Fin</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    {% for l in eventos %}
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Evento</th>
+                                                    <th>Inicio</th>
+                                                    <th>Fin</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for l in eventos %}
                                                     <tr>
                                                         <td>{{ forloop.counter }}</td>
                                                         <td>{{ l.get_evento_display }}</td>
-                                                        <td>{% if l.fecha_inicio is not None %}{{ l.fecha_inicio }}{% else %}----{% endif %}</td>
-                                                        <td>{% if l.fecha_terminacion is not None %}{{ l.fecha_terminacion }}{% else %}----{% endif %}</td>
-                                                    {% if l.evento == "CAN" %}
-                                                        <div class="alert alert-danger"> {{ l.observaciones }}</div>
-                                                    {% endif %}
+                                                        <td>{% if l.fecha_inicio is not None %}
+                                                            {{ l.fecha_inicio|date:"D d M Y" }}
+                                                            {{ l.fecha_inicio|time:"h:i a" }}{% else %}
+                                                            ----{% endif %}</td>
+                                                        <td>{% if l.fecha_terminacion is not None %}
+                                                            {{ l.fecha_terminacion|date:"D d M Y" }}
+                                                            {{ l.fecha_inicio|time:"h:i a" }}{% else %}
+                                                            ----{% endif %}</td>
+                                                        {% if l.evento == "CAN" %}
+                                                            <div class="alert alert-danger"> {{ l.observaciones }}</div>
+                                                        {% endif %}
                                                     </tr>
-                                                    {% endfor %}
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
-                                    <div class="col-sm-6">
-                                        <div class="white-box">
-                                            <h3 class="box-title">Conceptos de operación</h3>
-                                            {% if object.estado != "T" and object.estado != "C"   %}
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="white-box">
+                                        <h3 class="box-title">Conceptos de operación</h3>
+                                        {% if object.estado != "T" and object.estado != "C" %}
                                             <div id="concepto-modal" class="modal fade" tabindex="-1" role="dialog"
                                                  aria-labelledby="myModalLabel"
                                                  aria-hidden="true" style="display: none;">
@@ -245,70 +253,82 @@
                                                                     aria-hidden="true">×
                                                             </button>
                                                             <h4 class="modal-title">Agregar Concepto</h4></div>
-                                                        <div class="modal-body" id="modal-body-evento">
+                                                        <div class="modal-body" id="modal-body-concepto">
                                                             {% include 'concepto_form.html' %}
                                                         </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button"
-                                                                        class="btn btn-default waves-effect"
-                                                                        data-dismiss="modal">Cerrar
-                                                                </button>
-                                                                <button id="evento-button" type="button"
-                                                                        class="btn btn-danger waves-effect waves-light">
-                                                                    Agregar
-                                                                </button>
-                                                            </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button"
+                                                                    class="btn btn-default waves-effect"
+                                                                    data-dismiss="modal">Cerrar
+                                                            </button>
+                                                            <button id="concepto-button" type="button"
+                                                                    class="btn btn-danger waves-effect waves-light">
+                                                                Agregar
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        <div class="button-box text-right">
-                                            <button class="btn btn-success waves-effect waves-light" type="button" data-toggle="modal" alt="default"
-                                                       data-target="#concepto-modal">
-                                                <span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Concepto
-                                            </button>
-                                        </div>
-                                        {% endif %}
-                                            <div class="table-responsive">
-                                                <table class="table">
-                                                    <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Concepto</th>
-                                                        <th>Cantidad</th>
-                                                        <th>Costo MX</th>
-                                                        <th>Costo USD</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>{{ object.servicio.servicio_cruce.get_tipo_display }}{{ object.servicio.servicio_extra.get_tipo_display }}</td>
-                                                        <td>----</td>
-                                                        <td>{{ object.servicio.importemx }}</td>
-                                                        <td>{{ object.servicio.importeusd }}</td>
-                                                    </tr>
-
-                                                    </tbody>
-                                                </table>
+                                            <div class="button-box text-right">
+                                                <button class="btn btn-success waves-effect waves-light" type="button"
+                                                        data-toggle="modal" alt="default"
+                                                        data-target="#concepto-modal">
+                                                    <span class="btn-label"><i class="fa fa-plus"></i></span>Agregar
+                                                    Concepto
+                                                </button>
                                             </div>
+                                        {% endif %}
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Concepto</th>
+                                                    <th class="text-right">Costo MX</th>
+                                                    <th class="text-right">Costo USD</th>
+                                                    <th></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>
+                                                        {{ object.servicio.servicio_cruce.get_tipo_display }}{{ object.servicio.servicio_extra.get_tipo_display }}</td>
+                                                    <td class="text-right">{{ object.servicio.importemx }}</td>
+                                                    <td class="text-right">{{ object.servicio.importeusd }}</td>
+                                                </tr>
+                                                {% for l in conceptos %}
+                                                    <tr>
+                                                        <td>{{ forloop.counter|add:1 }}</td>
+                                                        <td>{{ l.concepto }}</td>
+                                                        <td class="text-right">{{ l.costo_mx }}</td>
+                                                        <td class="text-right">{{ l.costo_usd }}</td>
+                                                        <td><a href="javascript:void(0)" data-toggle="modal" alt="default"
+                                                       data-target="#concepto-del-modal"> <i
+                                                            class="fa fa-times text-danger m-r-10"></i> </a></td>
+                                                    </tr>
+                                                {% endfor %}
+
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
-
                                 </div>
 
-
                             </div>
+
+
                         </div>
-                        <div class="form-actions" style="margin-left: 25px; padding-bottom: 25px;">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="row">
-                                        <div class="col-md-offset-3 col-md-9">
-                                            <button type="button" class="btn btn-default"
-                                                    onclick="window.history.go(-1);">
-                                                Regresar
-                                            </button>
-                                        </div>
+                    </div>
+                    <div class="form-actions" style="margin-left: 25px; padding-bottom: 25px;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-offset-3 col-md-9">
+                                        <button type="button" class="btn btn-default"
+                                                onclick="window.history.go(-1);">
+                                            Regresar
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -317,6 +337,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
 
@@ -331,5 +352,10 @@
 {% block js %}
     <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.min.js"></script>
     <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.es.js"></script>
-   {% if object.estado != "T" and object.estado != "C" %}<script src="/static/system/js/operations.js"></script>{% endif %}
+    {% if object.estado != "T" and object.estado != "C" %}
+    <script type="application/javascript">
+        var moneda = ''
+        {% if object.servicio.importemx > 0 %} moneda = 'MX' {% elif object.servicio.importeusd > 0 %} moneda = 'USD' {% endif %}
+    </script>
+    <script src="/static/system/js/operations.js"></script>{% endif %}
 {% endblock %}

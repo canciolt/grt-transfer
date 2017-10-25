@@ -24,6 +24,7 @@ urlpatterns = [
    url(r'^ajax/operacion/startop/$', startop, name='ajax-startop'),
    url(r'^ajax/operacion/change_sello/$', change_sello, name='ajax-change_sello'),
    url(r'^ajax/operacion/evento_add/$', event_add, name='ajax-event_add'),
+   url(r'^ajax/operacion/concepto_add/$', concepto_add, name='ajax-concepto_add'),
    url(r'^ajax/factura/get_client_operations/$', get_client_operations, name='ajax-client_operations'),
    url(r'^ajax/factura/reset_operations_json/$', reset_operations_json, name='ajax-reset-operations-json'),
    url(r'^ajax/factura/facturar/$', facturar, name='ajax-facturar'),

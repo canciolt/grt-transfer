@@ -10,7 +10,7 @@ from system.views import get_tasa_cambio
 from datetime import datetime
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
-from system.forms import Sellos_Form, Evento_Form
+from system.forms import Sellos_Form, Evento_Form, Concepto_Form
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -51,10 +51,10 @@ def get_data_form(request):
             for c in servicios:
                 try:
                     service = Servicio_Cruce.objects.get(pk=c.id)
-                    cruce.append((service.id, service.get_tipo_display()))
+                    cruce.append((service.id, service))
                 except:
                     service = Servicio_Extra.objects.get(pk=c.id)
-                    extra.append((service.id, service.get_tipo_display()))
+                    extra.append((service.id, service))
             consignatarios = Consignatario.objects.filter(cliente=client, usuario__is_active=True)
             for c in consignatarios:
                 consig.append((c.id, c.usuario.first_name))
@@ -80,24 +80,35 @@ def facturar(request):
         op_list = json.loads(op)
         operaciones = []
         cliente = get_object_or_404(Cliente, pk=int(client))
+        iva = 0
+        subtotalmx = 0
+        subtotalusd = 0
+        totalmx = 0
+        totalusd = 0
         for o in op_list:
             temp_op = get_object_or_404(Operacion, pk=int(o))
             conc_operacion = Concepto_Operacion.objects.filter(operacion=temp_op.id)
             imp_usd = temp_op.servicio.importeusd
             imp_mxn = temp_op.servicio.importemx
-            for conc in conc_operacion:
-                imp_usd += conc.cantidad * conc.costo_usd
-                imp_mxn += conc.cantidad * conc.costo_mx
+            subtotalmx += imp_mxn
+            subtotalusd += imp_usd
+           # for conc in conc_operacion:
+           #     imp_usd += conc.cantidad * conc.costo_usd
+           #    imp_mxn += conc.cantidad * conc.costo_mx
             if temp_op.servicio.iva == True:
-                imp_usd += imp_usd * 0.16
-                imp_mxn += imp_mxn * 0.16
+                iva += imp_mxn * 0.16
             operaciones.append({"id": temp_op.id, "fecha": temp_op.fecha, "servicio": temp_op.servicio, \
                                 "consignatario": temp_op.consignatario, "importeusd": imp_usd, "importemxn": imp_mxn})
-        filePath = os.path.join(settings.BASE_DIR, "system/templates/prefactura_form.html")
+        totalmx += subtotalmx + iva
+        totalusd += subtotalusd
         if 'approved' in request.POST:
-            pass
+            if 'is_fmxn' in request.POST and request.POST['is_fmxn'] == 'true':
+                print 0000+1
+                #fact = Factura.objects.create()
         else:
-            context = {'cliente': cliente, "operaciones": operaciones}
+            filePath = os.path.join(settings.BASE_DIR, "system/templates/prefactura_form.html")
+            context = {'cliente': cliente, "operaciones": operaciones, "iva":iva,"subtotalmx":subtotalmx, \
+                       "subtotalusd":subtotalusd, "totalmx":totalmx, "totalusd":totalusd}
             return render(request, filePath, context)
     else:
         raise Http404
@@ -194,8 +205,6 @@ def change_sello(request):
 def event_add(request):
     if request.method == 'POST':
         form = Evento_Form(data=request.POST)
-        context = {'form_evento': form}
-        filePath = os.path.join(settings.BASE_DIR, "system/templates/evento_form.html")
         if form.is_valid():
             form.save()
             if request.POST['evento'] == "CAN":
@@ -221,9 +230,27 @@ def event_add(request):
             messages.add_message(request, messages.SUCCESS, 'Evento agregado satisfactoriamente')
             return 1
         else:
+            filePath = os.path.join(settings.BASE_DIR, "system/templates/evento_form.html")
+            context = {'form_evento': form}
             return render(request, filePath, context)
     raise Http404
 
+
+@login_required
+@ajax
+@csrf_protect
+def concepto_add(request):
+    if request.method == 'POST':
+        form = Concepto_Form(data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.SUCCESS, 'Concepto agregado satisfactoriamente')
+            return 1
+        else:
+            filePath = os.path.join(settings.BASE_DIR, "system/templates/concepto_form.html")
+            context = {'form_concepto': form}
+            return render(request, filePath, context)
+    raise Http404
 
 @method_decorator(login_required, name='dispatch')
 class LogoutView(AJAXMixin, RedirectView):
