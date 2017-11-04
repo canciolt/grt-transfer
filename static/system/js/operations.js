@@ -1,9 +1,5 @@
 jQuery(document).ready(function () {
-    if (moneda == "MX") {
-        $('#id_costo_usd').prop('disabled', true);
-    } else if (moneda == "USD") {
-        $('#id_costo_mx').prop('disabled', true);
-    }
+    crtlmoneda(moneda, true);
     $('#sello-button').click(function () {
         ajaxPost('/ajax/operacion/change_sello/', $("#sello-form").serialize(), function (data) {
             if (data == 1) {
@@ -27,6 +23,7 @@ jQuery(document).ready(function () {
         })
     });
     $('#concepto-button').click(function () {
+        crtlmoneda(moneda, false);
         ajaxPost('/ajax/operacion/concepto_add/', $("#concepto-form").serialize(), function (data) {
             if (data == 1) {
                 $('#responsive-modal').modal('hide')
@@ -34,16 +31,37 @@ jQuery(document).ready(function () {
             } else {
                 $('#modal-body-concepto').html('');
                 $('#modal-body-concepto').append(data);
-                if (moneda == "MX") {
-                    $('#id_costo_usd').prop('disabled', true);
-                } else if (moneda == "USD") {
-                    $('#id_costo_mx').prop('disabled', true);
-                }
+                crtlmoneda(moneda, true);
             }
         })
     });
 
 });
+
+function crtlmoneda(m, status) {
+    if (m == "MX") {
+        $('#id_costo_usd').prop('disabled', status);
+    } else if (m == "USD") {
+        $('#id_costo_mx').prop('disabled', status);
+    }
+}
+
+function delconcepop(concepto) {
+    swal({
+        title: "Esta seguro ?",
+        text: "Pulse aceptar para eliminar concepto",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Aceptar",
+        cancelButtonText: "Cancelar",
+        closeOnConfirm: false
+    }, function () {
+        ajaxPost('/ajax/operacion/delconcepop/', {concepto: concepto}, function (content) {
+            location.reload();
+        });
+    });
+}
 
 function DataTime(id) {
     $("#" + id).datetimepicker({

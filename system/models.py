@@ -346,7 +346,7 @@ class Operacion(models.Model):
     estado_choices = (("P", "Pendiente autorización"),("I", "Iniciada"),("T", "Terminada"),("C", "Cancelada"))
     id = models.AutoField(primary_key=True)
     servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, verbose_name="servicio")
-    fecha = models.DateTimeField(default=timezone.now)
+    fecha_inicio = models.DateTimeField(verbose_name="fecha de inicio")
     operador = models.ForeignKey(Operador, on_delete=models.PROTECT, verbose_name="operador")
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, verbose_name="cliente")
     caja = models.ForeignKey(Caja, on_delete=models.PROTECT, verbose_name="caja")
@@ -381,6 +381,7 @@ class Evento_Operacion(models.Model):
 class Concepto_Operacion(models.Model):
     id = models.AutoField(primary_key=True)
     concepto = models.CharField(max_length=50, verbose_name="concepto")
+    fecha_concepto = models.DateTimeField(verbose_name="fecha de concepto")
     operacion = models.ForeignKey(Operacion,on_delete=models.PROTECT, verbose_name="operacion")
     costo_usd = models.FloatField(verbose_name="costo USD")
     costo_mx = models.FloatField(verbose_name="costo MX")
@@ -402,7 +403,7 @@ class Sello_Operacion(models.Model):
 class Factura(models.Model):
     estado_choices = (("A", "Abierta"), ("C", "Cerrada"), ("P", "Pagada"))
     id = models.AutoField(primary_key=True)
-    nfactura = models.CharField(max_length=10, unique=True)
+    nfactura = models.CharField(max_length=11, unique=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
     fecha = models.DateTimeField(default=timezone.now)
     expira = models.DateTimeField()
@@ -410,7 +411,7 @@ class Factura(models.Model):
     total_usd = models.FloatField(blank=True, null=True, verbose_name="total USD")
     total_mx = models.FloatField(blank=True, null=True, verbose_name="total MX")
     estado = models.CharField(choices=estado_choices, default='A', max_length=1)
-    tasa_cambio = models.FloatField(blank=True)
+    tasa_cambio = models.FloatField(default=0)
     observaciones = models.TextField(blank=True, verbose_name="observaciones")
 
     def __str__(self):

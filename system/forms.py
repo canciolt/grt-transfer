@@ -4,6 +4,8 @@ from models import *
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
 from datetime import datetime
+from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 
 class CamionForm(forms.ModelForm):
@@ -279,8 +281,11 @@ class Evento_Form(forms.ModelForm):
 class Concepto_Form(forms.ModelForm):
     class Meta:
         model = Concepto_Operacion
-        fields = ['operacion', 'costo_mx', 'costo_usd', 'concepto', 'observaciones']
+        fields = ['operacion', 'fecha_concepto', 'concepto', 'costo_mx', 'costo_usd', 'observaciones']
         widgets = {
+            'fecha_concepto': forms.DateTimeInput(
+                attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
+                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover": "DataTime(this.id);"}),
             'operacion': forms.TextInput(attrs={'style': 'visibility:hidden; position:absolute;'}),
             'concepto': forms.TextInput(attrs={'class': 'form-control'}),
             'costo_usd': forms.TextInput(attrs={'class': 'form-control', 'value': 0}),
@@ -291,10 +296,20 @@ class Concepto_Form(forms.ModelForm):
     def clean(self):
         cleaned_data = super(Concepto_Form, self).clean()
         con = cleaned_data.get('concepto')
+        usd = cleaned_data.get('costo_usd')
+        mx = cleaned_data.get('costo_mx')
+        fecha = cleaned_data.get('fecha_concepto')
         operacion = cleaned_data.get('operacion')
+        if usd == 0 and mx == 0:
+            self.add_error('costo_usd', 'Debe introducir un costo al concepto')
+            self.add_error('costo_mx', 'Debe introducir un costo al concepto')
         concepto = Concepto_Operacion.objects.filter(concepto=con, operacion=operacion).count()
         if concepto > 0:
-            self.add_error('evento', 'Ya existe este concepto para esta operación')
+            self.add_error('concepto', 'Ya existe este concepto para esta operación')
+        op = get_object_or_404(Operacion, pk=operacion.id)
+        if fecha < op.fecha_inicio:
+            self.add_error('fecha_concepto', 'La fecha tiene que ser posterior a la fecha de operación')
+
 
 class User_Form(forms.ModelForm):
     class Meta:
@@ -445,9 +460,6 @@ class Servicio_Cruce_Form(forms.ModelForm):
         if iva == True and importeusd > 0:
             self.add_error('importeusd', 'El IVA solo solo se aplica a importe en pesos mexicanos')
 
-
-
-
 class Servicio_Extra_Form(forms.ModelForm):
     class Meta:
         model = Servicio_Extra
@@ -477,18 +489,25 @@ class Operacion_Form(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(Operacion_Form, self).__init__(*args, **kwargs)
-        self.fields['operador'].queryset = Operador.objects.filter(estado=False, visa_expira__gt=datetime.now(), \
-                                                                   fast_expira__gt=datetime.now(),
-                                                                   licencia_expira__gt=datetime.now())
+        if kwargs['instance']:
+            self.fields['operador'].queryset = Operador.objects.filter(pk=kwargs['instance'].operador.id) | Operador.objects.filter(estado=False, visa_expira__gt=datetime.now(), \
+                                                                       fast_expira__gt=datetime.now(), licencia_expira__gt=datetime.now())
+            self.fields['sello'].initial = Sello_Operacion.objects.filter(operacion=kwargs['instance'].id).order_by('-id')[0]
+        else:
+            self.fields['operador'].queryset = Operador.objects.filter(estado=False, visa_expira__gt=datetime.now(), \
+                                                                             fast_expira__gt=datetime.now(), licencia_expira__gt=datetime.now())
         self.fields['cliente'].queryset = Cliente.objects.filter(usuario__is_active=True)
 
     class Meta:
         model = Operacion
-        fields = ['operador', 'cliente', 'consignatario', 'servicio', \
-                  'origen', 'destino', 'caja', 'pedimento', 'referencia']
+        fields = ['fecha_inicio', 'operador', 'cliente', 'consignatario', 'servicio', \
+                  'caja', 'origen', 'destino', 'pedimento', 'referencia']
         widgets = {
+            'fecha_inicio': forms.DateTimeInput(
+                attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
+                       "placeholder": "dd/mm/yyyy hh:ii:ss"}),
             'operador': forms.Select(attrs={'class': 'form-control select2'}),
-            'cliente': forms.Select(attrs={'class': 'form-control select2'}),
+            'cliente': forms.Select(attrs={'class': 'form-control select2', 'onchange':'updatefields();'}),
             'consignatario': forms.Select(attrs={'class': 'form-control select2'}),
             'servicio': forms.Select(attrs={'class': 'form-control select2'}),
             'pedimento': forms.TextInput(attrs={'class': 'form-control'}),
@@ -506,7 +525,11 @@ class Operacion_Form(forms.ModelForm):
         if origen == destino:
             self.add_error('origen', 'EL origen tiene que distinto al destino')
             self.add_error('destino', 'EL destino tiene que distinto al origen')
-        sellos = Sello_Operacion.objects.filter(sello=sello).count()
+        if self.instance.id is None:
+            sellos = Sello_Operacion.objects.filter(sello=sello).count()
+        else:
+            sellos = Sello_Operacion.objects.filter(sello=sello).exclude(sello=sello,
+                                                                         operacion=self.instance.id).count()
         if sellos > 0:
             self.add_error('sello', 'Este sello ya fue utilizado.')
 

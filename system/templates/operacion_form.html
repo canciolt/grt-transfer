@@ -16,17 +16,29 @@
                                                         <label class="control-label">{{ field.label_tag }}</label>
                                                         {% if field.name == "servicio" %}
                                                             <select name="servicio" required="" class="form-control select2" id="id_servicio">
-                                                              <option value="" selected="">---------</option>
+                                                              {% if object %}
+                                                                  <option value="{{ object.servicio.id }}" selected="">{{ object.servicio }}</option>
+                                                              {% else %}
+                                                                  <option value="" selected="">---------</option>
+                                                              {% endif %}
                                                             </select>
                                                         {% else %}
                                                         {% if field.name == "consignatario" %}
                                                             <select name="consignatario" required="" class="form-control select2" id="id_consignatario">
-                                                              <option value="" selected="">---------</option>
+                                                              {% if object %}
+                                                                  <option value="{{ object.consignatario.id }}" selected="">{{ object.consignatario }}</option>
+                                                              {% else %}
+                                                                  <option value="" selected="">---------</option>
+                                                              {% endif %}
                                                             </select>
                                                         {% else %}
                                                         {% if field.name == "caja" %}
                                                             <select name="caja" required="" class="form-control select2" id="id_caja">
-                                                              <option value="" selected="">---------</option>
+                                                              {% if object %}
+                                                                  <option value="{{ object.caja.id }}" selected="">{{ object.caja }}</option>
+                                                              {% else %}
+                                                                  <option value="" selected="">---------</option>
+                                                              {% endif %}
                                                             </select>
                                                         {% else %}
                                                         {{ field }}
@@ -76,41 +88,50 @@
     <script src="/static/system/js/validator.js"></script>
     <script>
             jQuery(document).ready(function () {
-                $( "#id_cliente" ).change(function() {
-                    $('div.servicio').block({
-                                    message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
-                                        border: '1px solid #fff'}});
-                    $('div.consignatario').block({
-                                    message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
-                                        border: '1px solid #fff'}});
-                    $('div.caja').block({
-                                    message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
-                                        border: '1px solid #fff'}});
-                    ajaxPost('/ajax/operacion/get_data_form/',{"cliente":$("#id_cliente").val()}, function(content){
-                        $('#id_servicio').html('');
-                        $('#id_consignatario').html('');
-                        $('#id_caja').html('');
-
-                        $("<optgroup label='Servicios de Cruce' id='id_cruce_option'></optgroup>").appendTo("#id_servicio");
-                        $.each(content['cruce'], function(i, item) {
-                            $("<option value='" +item[0]+ "'>" +item[1]+ "</option>").appendTo("#id_cruce_option");});
-                        $("<optgroup label='Servicios Extras' id='id_extra_option'></optgroup>").appendTo("#id_servicio");
-                        $.each(content['extra'], function(i, item) {
-                            $("<option value='" +item[0]+ "'>" +item[1]+ "</option>").appendTo("#id_extra_option");
-                        });
-                        $.each(content['consig'], function(i, item) {
-                            $("<option value='" +item[0]+ "'>" +item[1]+ "</option>").appendTo("#id_consignatario");
-                        });
-                        $.each(content['caja'], function(i, item) {
-                            $("<option value='" +item[0]+ "'>" +item[1]+ "</option>").appendTo("#id_caja");
-                        });
-                    })
-                    $('div.servicio').unblock();
-                    $('div.consignatario').unblock();
-                    $('div.caja').unblock();
-                });
+                {% if accion == 'update' %}updatefields();{% endif %}
                 $(".select2").select2();
-                $('#id_fecha').datetimepicker({language:  'es', weekStart: 1, todayBtn:  1, autoclose: 1, todayHighlight: 1, startView: 2, forceParse: 0, showMeridian: 2 });
+                $('#id_fecha_inicio').datetimepicker({language:  'es', weekStart: 1, todayBtn:  1, autoclose: 1, todayHighlight: 1, startView: 2, forceParse: 0, showMeridian: 2 });
             });
+
+            function updatefields() {
+                   $('div.servicio').block({
+                       message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
+                           border: '1px solid #fff'
+                       }
+                   });
+                   $('div.consignatario').block({
+                       message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
+                           border: '1px solid #fff'
+                       }
+                   });
+                   $('div.caja').block({
+                       message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
+                           border: '1px solid #fff'
+                       }
+                   });
+                   ajaxPost('/ajax/operacion/get_data_form/', {"cliente": $("#id_cliente").val(),{% if accion == 'update' %}"cajaop":{{ object.caja.id }}{% endif %}}, function (content) {
+                       $('#id_servicio').html('');
+                       $('#id_consignatario').html('');
+                       $('#id_caja').html('');
+
+                       $("<optgroup label='Servicios de Cruce' id='id_cruce_option'></optgroup>").appendTo("#id_servicio");
+                       $.each(content['cruce'], function (i, item) {
+                           $("<option value='" + item[0] + "'>" + item[1] + "</option>").appendTo("#id_cruce_option");
+                       });
+                       $("<optgroup label='Servicios Extras' id='id_extra_option'></optgroup>").appendTo("#id_servicio");
+                       $.each(content['extra'], function (i, item) {
+                           $("<option value='" + item[0] + "'>" + item[1] + "</option>").appendTo("#id_extra_option");
+                       });
+                       $.each(content['consig'], function (i, item) {
+                           $("<option value='" + item[0] + "'>" + item[1] + "</option>").appendTo("#id_consignatario");
+                       });
+                       $.each(content['caja'], function (i, item) {
+                           $("<option value='" + item[0] + "'>" + item[1] + "</option>").appendTo("#id_caja");
+                       });
+                   })
+                   $('div.servicio').unblock();
+                   $('div.consignatario').unblock();
+                   $('div.caja').unblock();
+               }
         </script>
 {% endblock %}

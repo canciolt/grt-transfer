@@ -174,7 +174,7 @@
                                 "approved": true,
                                 "is_fmxn": $("#id-is-fmxn").prop("checked")
                             }, function (content) {
-                                alert(content);
+                                location.reload();
                             })
                         } else {
                             ajaxPost('/ajax/factura/facturar/', {
