@@ -4,19 +4,19 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="white-box">
-                <h3 class="box-title m-b-0">Listado de Facturas</h3>
+                <h3 class="box-title m-b-0">Listado de Facturas Canceladas</h3>
                 <div class="button-box text-right">
                     <button class="btn btn-success waves-effect waves-light" type="button"
                             onclick="window.location.href='{% url 'add' 'factura' %}'"><span class="btn-label"><i
                             class="fa fa-plus"></i></span>Agregar Factura
                     </button>
+                     <button class="btn btn-custom waves-effect waves-light" type="button"
+                            onclick="window.location.href='/list/factura'"><span class="btn-label"><i
+                            class="fa fa-folder-open-o"></i></span>Abiertas
+                    </button>
                     <button class="btn btn-success waves-effect waves-light" type="button"
                             onclick="window.location.href='/list/facturaspagadas'"><span class="btn-label"><i
                             class="fa fa-check"></i></span>Pagadas
-                    </button>
-                    <button class="btn btn-danger waves-effect waves-light" type="button"
-                            onclick="window.location.href='/list/facturascanceladas'"><span class="btn-label"><i
-                            class="fa fa-times"></i></span>Canceladas
                     </button>
                 </div>
                 <p class="text-muted m-b-30"></p>

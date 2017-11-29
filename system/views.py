@@ -29,6 +29,41 @@ from django.shortcuts import get_object_or_404
 class IndexView(TemplateView):
     template_name = "index.html"
 
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        operaciones = Operacion.objects.filter(estado="T")
+        op = Operacion.objects.all()
+        imp = 0
+        exp = 0
+        cancel = 0
+        proc = 0
+        for o in op:
+            if o.estado == 'C':
+                cancel += 1
+            if o.estado == 'I':
+                proc += 1
+
+        for o in operaciones:
+            try:
+                if o.servicio.servicio_cruce:
+                    if o.servicio.servicio_cruce == "IMP" or o.servicio.servicio_cruce == "IMPV":
+                        imp += 1
+                    if o.servicio.servicio_cruce == "EXP" or o.servicio.servicio_cruce == "EXPV":
+                        exp += 1
+
+            except ObjectDoesNotExist:
+                pass
+        clientes = Cliente.objects.all().order_by('-id')[0:5]
+
+        context['importacion'] = imp
+        context['exportacion'] = exp
+        context['proceso'] = proc
+        context['cancelada'] = cancel
+        context['clientes'] = clientes
+
+        return context
+
+
 
 class LoginView(FormView):
     form_class = AuthenticationForm
@@ -330,7 +365,8 @@ class Dinamic_Update(SuccessMessageMixin, UpdateView):
 class Dinamic_List(ListView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "usuario": User, "cliente": Cliente, "patio": Patio, "servicio": Servicio, "operacion": Operacion, \
-              "caja": Caja, "oppendientes": Operacion, "factura": Factura}
+              "caja": Caja, "oppendientes": Operacion, "factura": Factura, "facturaspagadas": Factura, \
+              "facturascanceladas": Factura, "opterminadas": Operacion, "opcanceladas": Operacion}
     pk_model = ""
 
     @method_decorator(login_required)
@@ -355,19 +391,28 @@ class Dinamic_List(ListView):
 
     def get_queryset(self):
         queryset = super(Dinamic_List, self).get_queryset()
-        if self.model == Operacion and self.pk_model != "oppendientes":
-            return queryset.exclude(estado="P")
+        if self.model == Operacion and (self.pk_model != "oppendientes" and self.pk_model != "opterminadas" and self.pk_model != "opcanceladas"):
+            return queryset.filter(estado="I")
         if self.pk_model == "oppendientes":
             return queryset.filter(estado="P")
-        if self.pk_model == "factura":
-            return queryset.order_by('fecha')
+        if self.pk_model == "opterminadas":
+            return queryset.filter(estado="T")
+        if self.pk_model == "opcanceladas":
+            return queryset.filter(estado="C")
+        if self.model == Factura and (self.pk_model != "facturaspagadas" and self.pk_model != "facturascanceladas") :
+            return queryset.filter(estado='A').order_by('fecha')
+        if self.pk_model == "facturaspagadas":
+            return queryset.filter(estado='P').order_by('fecha')
+        if self.pk_model == "facturascanceladas":
+            return queryset.filter(estado='C').order_by('fecha')
         return queryset
 
 
 class Dinamic_Delete(SuccessMessageMixin, DeleteView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "usuario": User, "cliente": Cliente, "consignatario": Consignatario, "patio": Patio, \
-              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "caja": Caja, "operacion": Operacion}
+              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "caja": Caja, "operacion": Operacion, \
+              "payment": Pagos}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -417,6 +462,12 @@ class Dinamic_Delete(SuccessMessageMixin, DeleteView):
                 else:
                     messages.add_message(request, messages.ERROR, 'Solo se pueden eliminar operaciones pendientes !')
                     return redirect(self.success_url)
+            if self.model == Pagos:
+                payment = get_object_or_404(Pagos, pk=kwargs['pk'])
+                self.success_url = "/payments"
+                if payment.estado != 'P':
+                    messages.add_message(request, messages.ERROR, 'Solo se pueden eliminar pagos pendientes aprobación !')
+                    return redirect(self.success_url)
             return super(Dinamic_Delete, self).delete(request, *args, **kwargs)
         except models.ProtectedError:
             messages.add_message(request, messages.ERROR, 'Error al eliminar! dependencias protegidas')
@@ -426,7 +477,7 @@ class Dinamic_Delete(SuccessMessageMixin, DeleteView):
 class Dinamic_Detail(DetailView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "cliente": Cliente, "patio": Patio, "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, \
-              "caja": Caja, "operacion": Operacion, "factura":Factura}
+              "caja": Caja, "operacion": Operacion, "factura": Factura}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -492,13 +543,15 @@ class Dinamic_Detail(DetailView):
                     subtotalmx += conc.costo_mx
                     if o.operacion.servicio.iva == True:
                         iva += conc.costo_mx * 0.16
-                operaciones.append({"id": o.operacion.id, "fecha": o.operacion.fecha_inicio, "servicio": o.operacion.servicio, \
-                                    "consignatario": o.operacion.consignatario, "importeusd": imp_usd,
-                                    "importemxn": imp_mxn,
-                                    "conceptos": conc_operacion})
+                operaciones.append(
+                    {"id": o.operacion.id, "fecha": o.operacion.fecha_inicio, "servicio": o.operacion.servicio, \
+                     "consignatario": o.operacion.consignatario, "importeusd": imp_usd,
+                     "importemxn": imp_mxn,
+                     "conceptos": conc_operacion})
             totalmx += subtotalmx + iva
             totalusd += subtotalusd
-            extra = {"subtotalusd":subtotalusd,"totalusd":totalusd,"subtotalmx":subtotalmx,"totalmx":totalmx,"iva":iva}
+            extra = {"subtotalusd": subtotalusd, "totalusd": totalusd, "subtotalmx": subtotalmx, "totalmx": totalmx,
+                     "iva": iva}
             context['operaciones'] = operaciones
             context['extra'] = extra
         return context
@@ -561,6 +614,19 @@ def Add_Exta_Camion(request, model, pk):
     else:
         form = forms[model](initial={'camion_id': pk})
     return render(request, 'vcamion_form.html', {'form': form, 'camion': camion, 'modelo': model})
+
+
+@method_decorator(never_cache, name='dispatch')
+@method_decorator(login_required, name='dispatch')
+class PagosView(TemplateView):
+    template_name = "payments.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(PagosView, self).get_context_data(**kwargs)
+        context['clientes'] = Cliente.objects.filter(usuario__is_active=True).order_by('id')
+        context['pagos_pendientes'] = Pagos.objects.filter(estado='P')
+        context['form_payment'] = Pagos_Form()
+        return context
 
 
 @login_required

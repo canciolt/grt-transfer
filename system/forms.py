@@ -460,6 +460,7 @@ class Servicio_Cruce_Form(forms.ModelForm):
         if iva == True and importeusd > 0:
             self.add_error('importeusd', 'El IVA solo solo se aplica a importe en pesos mexicanos')
 
+
 class Servicio_Extra_Form(forms.ModelForm):
     class Meta:
         model = Servicio_Extra
@@ -490,12 +491,17 @@ class Operacion_Form(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(Operacion_Form, self).__init__(*args, **kwargs)
         if kwargs['instance']:
-            self.fields['operador'].queryset = Operador.objects.filter(pk=kwargs['instance'].operador.id) | Operador.objects.filter(estado=False, visa_expira__gt=datetime.now(), \
-                                                                       fast_expira__gt=datetime.now(), licencia_expira__gt=datetime.now())
-            self.fields['sello'].initial = Sello_Operacion.objects.filter(operacion=kwargs['instance'].id).order_by('-id')[0]
+            self.fields['operador'].queryset = Operador.objects.filter(
+                pk=kwargs['instance'].operador.id) | Operador.objects.filter(estado=False,
+                                                                             visa_expira__gt=datetime.now(), \
+                                                                             fast_expira__gt=datetime.now(),
+                                                                             licencia_expira__gt=datetime.now())
+            self.fields['sello'].initial = \
+            Sello_Operacion.objects.filter(operacion=kwargs['instance'].id).order_by('-id')[0]
         else:
             self.fields['operador'].queryset = Operador.objects.filter(estado=False, visa_expira__gt=datetime.now(), \
-                                                                             fast_expira__gt=datetime.now(), licencia_expira__gt=datetime.now())
+                                                                       fast_expira__gt=datetime.now(),
+                                                                       licencia_expira__gt=datetime.now())
         self.fields['cliente'].queryset = Cliente.objects.filter(usuario__is_active=True)
 
     class Meta:
@@ -507,7 +513,7 @@ class Operacion_Form(forms.ModelForm):
                 attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
                        "placeholder": "dd/mm/yyyy hh:ii:ss"}),
             'operador': forms.Select(attrs={'class': 'form-control select2'}),
-            'cliente': forms.Select(attrs={'class': 'form-control select2', 'onchange':'updatefields();'}),
+            'cliente': forms.Select(attrs={'class': 'form-control select2', 'onchange': 'updatefields();'}),
             'consignatario': forms.Select(attrs={'class': 'form-control select2'}),
             'servicio': forms.Select(attrs={'class': 'form-control select2'}),
             'pedimento': forms.TextInput(attrs={'class': 'form-control'}),
@@ -541,6 +547,55 @@ class Factura_Form(forms.ModelForm):
         widgets = {
             'cliente': forms.Select(attrs={'class': 'form-control select2', 'required': ''}),
         }
+
+
+class Pagos_Form(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(Pagos_Form, self).__init__(*args, **kwargs)
+        self.fields['factura'].queryset = Factura.objects.filter(estado='A')
+
+    class Meta:
+        model = Pagos
+        fields = ['factura', 'fecha', 'metodo', 'cuenta','importe', 'moneda', 'observaciones']
+        widgets = {
+            'factura': forms.Select(attrs={'class': 'form-control select2', 'required': '', 'onchange': 'checkmoney();'}),
+            'fecha': forms.DateTimeInput(
+                attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
+                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover": "DataTime(this.id);"}),
+            'metodo': forms.Select(attrs={'class': 'form-control', 'required': ''}),
+            'cuenta': forms.Select(attrs={'class': 'form-control', 'required': ''}),
+            'moneda': forms.Select(attrs={'class': 'form-control', 'required': ''}),
+            'importe': forms.TextInput(attrs={'class': 'form-control' }),
+            'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'cols': 4}),
+        }
+
+    def clean(self):
+        cleaned_data = super(Pagos_Form, self).clean()
+        importe = cleaned_data.get('importe')
+        fecha = cleaned_data.get('fecha')
+        factura = cleaned_data.get('factura')
+        moneda = cleaned_data.get('moneda')
+        if importe <= 0:
+            self.add_error('importe', 'Importe invalido.')
+        if fecha != None and fecha <= factura.fecha:
+            self.add_error('fecha', 'La fecha de pago tiene que ser mayor a la fecha de facturación')
+        if factura != None and moneda != None:
+            payments = Pagos.objects.filter(factura=factura)
+            importeusd = 0
+            importemxn = 0
+            for p in payments:
+                if p.moneda == "MXN":
+                    importemxn += p.importe
+                if p.moneda == "USD":
+                    importeusd += p.importe
+            if moneda == "MXN":
+                if importe > round(factura.total_mx - importemxn, 2):
+                    self.add_error('importe', 'El importe no puede ser mayor al importe total faltante.')
+            if moneda == "USD":
+                if importe > round(factura.total_usd - importeusd, 2):
+                    self.add_error('importe', 'El importe no puede ser mayor al importe total faltante.')
+
+
 
 
 class Resgistro_Form(UserCreationForm):

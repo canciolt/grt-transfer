@@ -5,10 +5,10 @@
 <div class="row">
                     <div class="col-sm-12">
                         <div class="white-box">
-                            <h3 class="box-title m-b-0">Listado de Operaciones</h3>
+                            <h3 class="box-title m-b-0">Listado de Operaciones Terminadas</h3>
                         <div class="button-box text-right">
                                 <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add' 'operacion' %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Operacion</button>
-                                <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'opterminadas' %}'"><span class="btn-label"><i class="fa fa-check"></i></span>Terminadas</button>
+                                <button class="btn btn-custom waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'operacion' %}'"><span class="btn-label"><i class="fa fa-sign-in"></i></span>Iniciadas</button>
                                 <button class="btn btn-danger waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'opcanceladas' %}'"><span class="btn-label"><i class="fa fa-times"></i></span>Canceladas</button>
                                 <button class="btn btn-default waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'oppendientes' %}'"><span class="btn-label"><i class="fa fa-stop-circle-o"></i></span>Pendientes</button>
 

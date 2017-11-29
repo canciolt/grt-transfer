@@ -3,111 +3,122 @@
 
 {% block main-content %}
     <div class="row">
-    <div class="col-md-12">
-        <div class="white-box">
-            <h3><b>FACTURA</b> <span class="pull-right"># {{ object.nfactura }}</span></h3>
-            <hr>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="pull-left">
-                        <address>
-                            <img src="/static/system/plugins/images/eliteadmin-logo-dark.png" alt="Home">
-                            <p class="text-muted m-l-5" style="text-align: center;">505 Union Pacific Blvd.<br/>
-                                Laredo, Texas,<br/>
-                                78045 (956) 724-3400 </p>
-                        </address>
-                    </div>
-                    <div class="pull-right text-right">
-                        <address>
-                            <h3>Cliente,</h3>
-                            <h4 class="font-bold">{{ object.cliente }}</h4>
-                            <p class="text-muted m-l-30">{{ object.cliente.direccion }} <br/>
-                                {{ object.cliente.estado }} - {{ object.cliente.cpostal }}, <br/>
-                                {{ object.cliente.get_pais_display }}</p>
-                                  <p class="m-t-30"><b>Fecha Factura :</b> <i class="fa fa-calendar"> </i> {{ object.fecha|date:"D d M Y" }}</p>
-                                  <p><b>Vence :</b> <i class="fa fa-calendar"></i> {{ object.expira|date:"D d M Y" }}</p>
-                        </address>
-                    </div>
-                </div>
-
-                <div class="col-md-12">
-                    {% if totalusd > 0 %}
-                        <div class="pull-right text-right">
-                            <label class="control-label m-r-10">Facturar en pesos mexicanos: </label>
-                            <input type="checkbox" id="id-is-fmxn" class="js-switch" data-color="#99d683"
-                                   data-size="small"/>
+        <div class="col-md-12">
+            <div class="white-box">
+                <h3><b>FACTURA</b> <span class="pull-right"># {{ object.nfactura }}</span></h3>
+                <hr>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="pull-left">
+                            <address>
+                                <img src="/static/system/plugins/images/eliteadmin-logo-dark.png" alt="Home">
+                                <p class="text-muted m-l-5" style="text-align: center;">505 Union Pacific Blvd.<br/>
+                                    Laredo, Texas,<br/>
+                                    78045 (956) 724-3400 </p>
+                            </address>
                         </div>
-                    {% endif %}
-                    <h3 class="box-title m-b-0">Operaciones</h3>
-                    <div class="table-responsive m-t-0">
-                        <table class="table table-hover">
-                            <thead>
-                            <tr>
-                                <th class="text-center">#</th>
-                                <th class="text-center">Fecha</th>
-                                <th class="text-center">Servicio</th>
-                                <th class="text-center">IVA</th>
-                                <th class="text-right">Importe MX</th>
-                                <th class="text-right">Importe USD</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for l in operaciones %}
+                        <div class="pull-right text-right">
+                            <address>
+                                <h3>Cliente,</h3>
+                                <h4 class="font-bold">{{ object.cliente }}</h4>
+                                <p class="text-muted m-l-30">{{ object.cliente.direccion }} <br/>
+                                    {{ object.cliente.estado }} - {{ object.cliente.cpostal }}, <br/>
+                                    {{ object.cliente.get_pais_display }}</p>
+                                <p class="m-t-30"><b>Fecha Factura :</b> <i
+                                        class="fa fa-calendar"> </i> {{ object.fecha|date:"D d M Y" }}</p>
+                                <p><b>Vence :</b> <i class="fa fa-calendar"></i> {{ object.expira|date:"D d M Y" }}</p>
+                            </address>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        {% if totalusd > 0 %}
+                            <div class="pull-right text-right">
+                                <label class="control-label m-r-10">Facturar en pesos mexicanos: </label>
+                                <input type="checkbox" id="id-is-fmxn" class="js-switch" data-color="#99d683"
+                                       data-size="small"/>
+                            </div>
+                        {% endif %}
+                        <h3 class="box-title m-b-0">Operaciones</h3>
+                        <div class="table-responsive m-t-0">
+                            <table class="table table-hover">
+                                <thead>
                                 <tr>
-                                    <td class="text-center">{{ l.id }}</td>
-                                    <td class="text-center">{{ l.fecha_inicio|date:"D d M Y" }}</td>
-                                    <td class="text-center">{{ l.servicio }}</td>
-                                    <td class="text-center">{% if l.servicio.iva %}
-                                        <i class="fa fa-check-square-o text-success"></i>{% else %}
-                                        <i class="fa fa-times-circle text-danger">{% endif %}</td>
-                                    <td class="text-right">{{ l.importemxn }}</td>
-                                    <td class="text-right">{{ l.importeusd }}</td>
+                                    <th class="text-center">#</th>
+                                    <th class="text-center">Fecha</th>
+                                    <th class="text-center">Servicio</th>
+                                    <th class="text-center">IVA</th>
+                                    <th class="text-right">Importe MX</th>
+                                    <th class="text-right">Importe USD</th>
                                 </tr>
-                                {% for c in l.conceptos %}
+                                </thead>
+                                <tbody>
+                                {% for l in operaciones %}
                                     <tr>
-                                    <td class="text-center">|--></td>
-                                    <td class="text-center">{{ c.fecha|date:"D d M Y" }}</td>
-                                    <td class="text-center">Concepto por: {{ c.concepto }}</td>
-                                    <td>--></td>
-                                    <td class="text-right">{{ c.costo_mx }}</td>
-                                    <td class="text-right">{{ c.costo_usd }}</td>
+                                        <td class="text-center">{{ l.id }}</td>
+                                        <td class="text-center">{{ l.fecha_inicio|date:"D d M Y" }}</td>
+                                        <td class="text-center">{{ l.servicio }}</td>
+                                        <td class="text-center">{% if l.servicio.iva %}
+                                            <i class="fa fa-check-square-o text-success"></i>{% else %}
+                                            <i class="fa fa-times-circle text-danger">{% endif %}</td>
+                                        <td class="text-right">{{ l.importemxn }}</td>
+                                        <td class="text-right">{{ l.importeusd }}</td>
                                     </tr>
+                                    {% for c in l.conceptos %}
+                                        <tr>
+                                            <td class="text-center">|--></td>
+                                            <td class="text-center">{{ c.fecha|date:"D d M Y" }}</td>
+                                            <td class="text-center">Concepto por: {{ c.concepto }}</td>
+                                            <td>--></td>
+                                            <td class="text-right">{{ c.costo_mx }}</td>
+                                            <td class="text-right">{{ c.costo_usd }}</td>
+                                        </tr>
+                                    {% endfor %}
                                 {% endfor %}
-                            {% endfor %}
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        {% if object.total_usd > 0 %}
+                            <div id="resume-usd-div" class="pull-right m-t-30 text-right">
+                                <p>Sub - Total USD: $ {{ extra.subtotalusd }}</p>
+                                <p>IVA : $ 0.0 </p>
+                                <hr>
+                                <h3><b>Total USD :</b> $ {{ object.total_usd }}</h3></div>
+                        {% endif %}
+                        {% if object.total_mx > 0 %}
+                            <div id="resume-mnx-div" class="pull-right m-t-30 m-r-30 text-right">
+                                <p>Sub - Total MXN: $ {{ extra.subtotalmx }}</p>
+                                <p>IVA (16%) : $ {{ extra.iva }} </p>
+                                {% if object.tasa_cambio != 0 %}
+                                    <p>Tasa de cambio : $ {{ object.tasa_cambio }} </p>{% endif %}
+                                <hr>
+                                <h3><b>Total MXN :</b> $ {{ object.total_mx }}</h3></div>
+                        {% endif %}
+                        <div style="margin: 50px;"></div>
                     </div>
                 </div>
-                <div class="col-md-12">
-                    {%  if object.total_usd > 0 %}
-                    <div id="resume-usd-div" class="pull-right m-t-30 text-right">
-                        <p>Sub - Total USD: $ {{ extra.subtotalusd }}</p>
-                        <p>IVA : $ 0.0 </p>
-                        <hr>
-                        <h3><b>Total USD :</b> $ {{ object.total_usd }}</h3></div>
-                    {% endif %}
-                    {%  if object.total_mx > 0 %}
-                    <div id="resume-mnx-div" class="pull-right m-t-30 m-r-30 text-right">
-                        <p>Sub - Total MXN: $ {{ extra.subtotalmx }}</p>
-                        <p>IVA (16%) : $ {{ extra.iva }} </p>
-                        {% if object.tasa_cambio != 0 %}<p>Tasa de cambio : $ {{ object.tasa_cambio }} </p>{% endif %}
-                        <hr>
-                        <h3><b>Total MXN :</b> $ {{ object.total_mx }}</h3></div>
-                    {% endif %}
-                    <div style="margin: 50px;"></div>
+                <div class="form-actions" style="margin-left: 25px; padding-bottom: 25px;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-offset-3 col-md-9">
+                                    <button type="button" class="btn btn-default" onclick="window.history.go(-1);">
+                                        Regresar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
-
-{% block css %}
-
-{% endblock %}
-
-
-{% block js %}
 
 
 {% endblock %}
+
+{% block css %}{% endblock %}
+{% block js %}{% endblock %}

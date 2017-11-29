@@ -8,7 +8,9 @@
                             <h3 class="box-title m-b-0">Listado de Operaciones Pendientes</h3>
                         <div class="button-box text-right">
                                 <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'add' 'operacion' %}'"><span class="btn-label"><i class="fa fa-plus"></i></span>Agregar Operacion</button>
-                            <button class="btn btn-custom waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'operacion' %}'"><span class="btn-label"><i class="fa fa-check"></i></span>Operaciones</button>
+                                <button class="btn btn-custom waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'operacion' %}'"><span class="btn-label"><i class="fa fa-sign-in"></i></span>Iniciadas</button>
+                                <button class="btn btn-success waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'opterminadas' %}'"><span class="btn-label"><i class="fa fa-check"></i></span>Terminadas</button>
+                                <button class="btn btn-danger waves-effect waves-light" type="button" onclick="window.location.href='{% url 'list' 'opcanceladas' %}'"><span class="btn-label"><i class="fa fa-times"></i></span>Canceladas</button>
                         </div>
                             <p class="text-muted m-b-30"></p>
                             <div class="table-responsive">
@@ -29,7 +31,7 @@
                                             <tr>
                                                 <td>{{ l.id }}</td>
                                                 <td>{{ l.servicio.servicio_cruce.get_tipo_display }}{{ l.servicio.servicio_extra.get_tipo_display }} </td>
-                                                <td>{{ l.fecha_inicio }}</td>
+                                                <td>{{ l.fecha_inicio|date:"D d M Y" }}</td>
                                                 <td>{{ l.cliente }}</td>
                                                 <td>{{ l.operador }}</td>
                                                 <td><div class="label label-table label-default">{{ l.get_estado_display }}</div></td>

@@ -1,4 +1,3 @@
-
 import os
 
 
@@ -33,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 	'django_ajax',
+    'wkhtmltopdf',
 	'system'
 ]
 
@@ -76,7 +76,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'grt_transfer',
         'USER': 'root',
-        'PASSWORD': 'AdmMysql2017',
+        'PASSWORD': 'AdMysqlDB',
         'HOST': '127.0.0.1',
         'PORT': '',
     }

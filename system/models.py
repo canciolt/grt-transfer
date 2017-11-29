@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
+from django.contrib.admin import models
 from django.db import models
 from  django.contrib.auth.models import User, AbstractUser
 from django.conf import settings
@@ -401,7 +403,7 @@ class Sello_Operacion(models.Model):
         return self.sello
 
 class Factura(models.Model):
-    estado_choices = (("A", "Abierta"), ("C", "Cerrada"), ("P", "Pagada"))
+    estado_choices = (("A", "Abierta"), ("C", "Cancelada"), ("P", "Pagada"))
     id = models.AutoField(primary_key=True)
     nfactura = models.CharField(max_length=11, unique=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
@@ -433,3 +435,20 @@ class Tasa_Cambio(models.Model):
     def __str__(self):
         return self.tasa
 
+class Pagos(models.Model):
+    moneda_choices = (("MXN", "Pesos"), ("USD", "Dollar"))
+    metodo_choices = (("C", "Cheque"), ("T", "Transferencia"))
+    estado_choices = (("P", "Pendiente"), ("A", "Aprobado"), ("C", "Cancelado"))
+    cuenta_choices = (("IBC", "IBC"), ("BMEX", "Banamex"), ("GRT", "Grt-transfer"))
+    id = models.AutoField(primary_key=True)
+    factura = models.ForeignKey(Factura, on_delete=models.PROTECT, verbose_name="factura")
+    moneda = models.CharField(choices=moneda_choices, max_length=3)
+    importe = models.FloatField(verbose_name="importe a pagar")
+    fecha = models.DateTimeField(verbose_name="fecha de pago")
+    metodo = models.CharField(choices=metodo_choices, max_length=1, verbose_name="metodo de pago")
+    estado = models.CharField(choices=estado_choices, default='P', max_length=1)
+    cuenta = models.CharField(choices=cuenta_choices, max_length=4, verbose_name="Cuenta de deposito")
+    observaciones = models.TextField(blank=True, verbose_name="observaciones")
+
+    def __str__(self):
+        return self.id

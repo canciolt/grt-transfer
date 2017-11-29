@@ -10,7 +10,7 @@ from system.views import get_tasa_cambio
 from datetime import datetime, timedelta
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
-from system.forms import Sellos_Form, Evento_Form, Concepto_Form
+from system.forms import Sellos_Form, Evento_Form, Concepto_Form, Pagos_Form
 from django.conf import settings
 import json
 import os
@@ -61,8 +61,10 @@ def get_data_form(request):
             for c in consignatarios:
                 consig.append((c.id, c.usuario.first_name))
             if cajaop != 0:
-                cajas = (Caja.objects.filter(pk=cajaop, cliente=client) | Caja.objects.filter(cliente=client, estado=False, fecha_entrada__lte=datetime.now(),
-                                            fecha_salida__gt=datetime.now())).distinct()
+                cajas = (
+                    Caja.objects.filter(pk=cajaop, cliente=client) | Caja.objects.filter(cliente=client, estado=False,
+                                                                                         fecha_entrada__lte=datetime.now(),
+                                                                                         fecha_salida__gt=datetime.now())).distinct()
             else:
                 cajas = Caja.objects.filter(cliente=client, estado=False, fecha_entrada__lte=datetime.now(),
                                             fecha_salida__gt=datetime.now())
@@ -122,10 +124,11 @@ def facturar(request):
                     tasa = get_tasa_cambio(request)['tasa']
                     mx = totalmx + totalusd * float(tasa)
                     fact = Factura.objects.create(nfactura=nfactura, cliente=cliente, expira=expira, total_usd=0, \
-                                                  total_mx=mx, tasa_cambio=tasa)
+                                                  total_mx=round(mx, 2), tasa_cambio=tasa)
                 else:
-                    fact = Factura.objects.create(nfactura=nfactura, cliente=cliente, expira=expira, total_usd=totalusd, \
-                                                  total_mx=totalmx, tasa_cambio=tasa)
+                    fact = Factura.objects.create(nfactura=nfactura, cliente=cliente, expira=expira,
+                                                  total_usd=round(totalusd, 2), \
+                                                  total_mx=round(totalmx, 2), tasa_cambio=tasa)
                 for op in op_list:
                     opera = get_object_or_404(Operacion, pk=int(op))
                     fact_op = Factura_Operacion.objects.create(factura=fact, operacion=opera)
@@ -144,15 +147,33 @@ def facturar(request):
     else:
         raise Http404
 
+
 @login_required
 @ajax
 @csrf_protect
 def cancel_factura(request):
     if request.method == 'POST':
-        factura = request.POST['factura']
-        return True
+        if 'factura' in request.POST:
+            nfactura = request.POST['factura']
+            factura = get_object_or_404(Factura, nfactura=nfactura)
+            payments = Pagos.objects.filter(factura=factura).count()
+            if payments == 0:
+                operaciones = Factura_Operacion.objects.filter(factura=factura)
+                for op in operaciones:
+                    op.operacion.facturada = False
+                    op.operacion.save()
+                factura.estado = "C"
+                factura.save()
+                messages.add_message(request, messages.SUCCESS,
+                                     'Factura cancelada satisfactoriamente !')
+                return True
+            else:
+                messages.add_message(request, messages.ERROR,
+                                     'Esta Factura tiene pagos asociados por lo que no se puede cancelar !')
+                return False
+        else:
+            return False
     raise Http404
-
 
 
 @login_required
@@ -256,6 +277,134 @@ def change_sello(request):
         else:
             return render(request, filePath, context)
     raise Http404
+
+
+@login_required
+@ajax
+@csrf_protect
+def add_payment(request):
+    if request.method == 'POST':
+        form = Pagos_Form(data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.SUCCESS, 'Pago agregado satisfactoriamente')
+            return 1
+        else:
+            filePath = os.path.join(settings.BASE_DIR, "system/templates/payment_form.html")
+            context = {'form_payment': form}
+            return render(request, filePath, context)
+    raise Http404
+
+
+@login_required
+@ajax
+@csrf_protect
+def startpay(request):
+    if request.method == 'POST':
+        if 'payid' in request.POST:
+            payid = request.POST['payid']
+            payment = get_object_or_404(Pagos, pk=int(payid))
+            payment.estado = 'A'
+            payment.save()
+            payments = Pagos.objects.filter(factura=payment.factura, estado='A')
+            pagosmxn = 0
+            pagosusd = 0
+            for p in payments:
+                if p.moneda == "MXN":
+                    pagosmxn += p.importe
+                if p.moneda == "USD":
+                    pagosusd += p.importe
+            if payment.factura.total_usd == 0 and payment.factura.total_mx > 0:
+                if payment.factura.total_mx == pagosmxn:
+                    payment.factura.estado = "P"
+                    payment.factura.save()
+
+            if payment.factura.total_usd > 0 and payment.factura.total_mx == 0:
+                if payment.factura.total_usd == pagosusd:
+                    payment.factura.estado = "P"
+                    payment.factura.save()
+            if payment.factura.total_usd > 0 and payment.factura.total_mx > 0:
+                if payment.factura.total_usd == pagosusd and payment.factura.total_mx == pagosmxn:
+                    payment.factura.estado = "P"
+                    payment.factura.save()
+
+        else:
+            return 0
+    else:
+        raise Http404
+
+
+@login_required
+@ajax
+@csrf_protect
+def checkmoney(request):
+    if request.method == 'POST':
+        if 'factura' in request.POST:
+            nfactura = request.POST['factura']
+            factura = get_object_or_404(Factura, pk=nfactura)
+            pagos = Pagos.objects.filter(factura=factura)
+            totalpagosmxn = 0
+            totalpagosusd = 0
+            for p in pagos:
+                if p.moneda == "MXN":
+                    totalpagosmxn += p.importe
+                if p.moneda == "USD":
+                    totalpagosusd += p.importe
+            if factura.total_mx == 0 and factura.total_usd > 0:
+                return {"moneda": "USD", "importe": factura.total_usd - totalpagosusd}
+            if factura.total_mx > 0 and factura.total_usd == 0:
+                return {"moneda": "MXN", "importe": factura.total_mx - totalpagosmxn}
+            if factura.total_mx > 0 and factura.total_usd > 0:
+                return {"moneda": "MXN-USD", "importemxn": round(factura.total_mx - totalpagosmxn, 2),
+                        "importeusd": round(factura.total_usd - totalpagosusd, 2)}
+        else:
+            return False
+    raise Http404
+
+@login_required
+@ajax
+@csrf_protect
+def report_main(request):
+    if request.method == 'POST':
+        payments = Pagos.objects.filter(estado="A")
+        cxc = Factura.objects.filter(estado='A').count()
+        ingmxn = 0
+        ingusd = 0
+        for p in payments:
+            if p.moneda == 'MXN':
+                ingmxn += p.importe
+            if p.moneda == 'USD':
+                ingusd += p.importe
+        return {"ingmxn":ingmxn, "ingusd":ingusd, "pagos":payments.count(), "cxc":cxc}
+    raise Http404
+
+
+@login_required
+@ajax
+@csrf_protect
+def get_payments_client(request):
+    if request.method == 'POST':
+        if 'cliente' in request.POST:
+            cliente = request.POST['cliente']
+            payments = []
+            pagos = Pagos.objects.filter(factura__cliente=cliente).order_by('-fecha', 'factura')
+            for p in pagos:
+                fvencimiento = p.factura.expira
+                fpago = p.fecha
+                if fpago > fvencimiento:
+                    dvencidos = fpago - fvencimiento
+                else:
+                    dvencidos = 0
+                payments.append(
+                    {"factura": p.factura, "fecha": p.fecha, "metodo": p.get_metodo_display, \
+                     "cuenta": p.get_cuenta_display, "importe": p.importe, "moneda": p.moneda, "dvencidos": dvencidos})
+            filePath = os.path.join(settings.BASE_DIR, "system/templates/payments_client.html")
+            context = {'payments': payments}
+            return render(request, filePath, context)
+        else:
+            raise Http404
+    else:
+        raise Http404
 
 
 @login_required

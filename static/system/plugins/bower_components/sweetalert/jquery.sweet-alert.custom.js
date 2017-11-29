@@ -34,6 +34,22 @@
 
         });
     });
+     $('#activepagobtn').click(function(){
+         var payid = $( this ).attr('payid')
+         swal({
+            title: "Procesar Pago",
+            text: "Pulse activar para iniciar el pago",
+            type: "success",
+            showCancelButton: true,
+            confirmButtonColor: "#00c292",
+            confirmButtonText: "Activar",
+            cancelButtonText:"Cancelar",
+            closeOnConfirm: false
+        }, function(){
+             ajaxPost('/ajax/payments/startpay/',{payid:payid}, function(content){location.reload();});
+
+        });
+    });
     },
     //init
     $.SweetAlert = new SweetAlert, $.SweetAlert.Constructor = SweetAlert

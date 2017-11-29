@@ -1,0 +1,28 @@
+<div class="table-responsive">
+    <table id="myTable2" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Factura</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Método</th>
+            <th>Cuenta</th>
+            <th>Total</th>
+            <th>Dias Vencidos</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for p in payments %}
+            <tr>
+                <td>{{ p.factura }}</td>
+                <td>{{ p.factura.cliente }}</td>
+                <td>{{ p.fecha|date:"D d M Y" }}</td>
+                <td>{{ p.metodo }}</td>
+                <td>{{ p.cuenta }}</td>
+                <td>{{ p.importe }} {{ p.moneda }}</td>
+                <td class="text-md-center">{% if p.dvencidos.days %}{{ p.dvencidos.days }}{% else %}0{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

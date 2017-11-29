@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block main-content %}
+    <div class="row">
+        <div class="col-lg-3 col-sm-3 col-xs-12">
+            <div class="white-box analytics-info">
+                <h3 class="box-title">Ingresos en MNX</h3>
+                <ul class="list-inline two-part">
+                    <li>
+                        <div id="sparklinedash"></div>
+                    </li>
+                    <li class="text-right"><i class="ti-money text-info"></i>
+                        <span id="ingmxn" class="counter text-info"></span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-3 col-xs-12">
+            <div class="white-box analytics-info">
+                <h3 class="box-title">Ingresos en USD</h3>
+                <ul class="list-inline two-part">
+                    <li>
+                        <div id="sparklinedash2"></div>
+                    </li>
+                    <li class="text-right"><i class="ti-money text-success"></i>
+                        <span id="ingusd" class="counter text-success"></span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-3 col-xs-12">
+            <div class="white-box analytics-info">
+                <h3 class="box-title">Pagos</h3>
+                <ul class="list-inline two-part">
+                    <li>
+                        <div id="sparklinedash3"></div>
+                    </li>
+                    <li class="text-right">
+                        <span id="idpagos" class="counter text-purple"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-3 col-xs-12">
+            <div class="white-box analytics-info">
+                <h3 class="box-title">Cuentas por cobrar</h3>
+                <ul class="list-inline two-part">
+                    <li>
+                        <div id="sparklinedash4"></div>
+                    </li>
+                    <li class="text-right"><span id="idcxc" class="text-danger"></span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div id="add-pagos-modal" class="modal fade" tabindex="-1" role="dialog"
+             aria-labelledby="myModalLabel"
+             aria-hidden="true" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-hidden="true">×
+                        </button>
+                        <h4 class="modal-title">Agregar Pago</h4></div>
+                    <div class="modal-body" id="modal-body-payment">
+                        {% include 'payment_form.html' %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-default waves-effect"
+                                data-dismiss="modal">Cerrar
+                        </button>
+                        <button id="button_add_pago" type="button"
+                                class="btn btn-danger waves-effect waves-light">
+                            Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="white-box">
+                <h3 class="box-title m-b-0">Pagos pendiente aprobación</h3>
+                <div class="button-box text-right">
+                    <button class="btn btn-success waves-effect waves-light" type="button"
+                            onclick="" data-toggle="modal" alt="default" data-target="#add-pagos-modal"><span
+                            class="btn-label"><i
+                            class="fa fa-plus"></i></span>Agregar Pago
+                    </button>
+                </div>
+                <hr>
+                <div class="table-responsive">
+                    <table id="myTable" class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Factura</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Método</th>
+                            <th>Cuenta</th>
+                            <th>Total</th>
+                            <th>Opciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for p in pagos_pendientes %}
+                            <tr>
+                                <td>{{ p.id }}</td>
+                                <td>{{ p.factura }}</td>
+                                <td>{{ p.factura.cliente }}</td>
+                                <td>{{ p.fecha|date:"D d M Y" }}</td>
+                                <td>{{ p.get_metodo_display }}</td>
+                                <td>{{ p.get_cuenta_display }}</td>
+                                <td>{{ p.importe }}</td>
+                                <td>
+                                    <button type="button" payid="{{ p.id }}" id="activepagobtn" class="btn btn-success"
+                                            style="font-size: 10px; padding: 0.4rem 1.2rem">Aprobar
+                                    </button>
+                                    <a href="/delete/payment/{{ p.id }}" data-toggle="tooltip"
+                                       data-original-title="Eliminar"> <i class="fa fa-close text-danger m-r-10"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="white-box">
+                <h3 class="box-title m-b-0">Relación de pagos por cliente</h3>
+                <hr>
+
+                <form action="" method="post" onsubmit="return false" style="width: 50%;">{% csrf_token %}
+                    <select name="cliente" required="" class="form-control select2" id="id_cliente">
+                        <option value="" selected="">---------</option>
+                        {% for c in clientes %}
+                            <option value="{{ c.id }}">{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <hr>
+                <div id="payments_client_content"></div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block css %}
+    <link href="{% static "system/plugins/bower_components/datatables/jquery.dataTables.min.css" %}" rel="stylesheet"
+          type="text/css"/>
+    <link href="/static/system/plugins/bower_components/custom-select/custom-select.css" rel="stylesheet"
+          type="text/css"/>
+    <link href="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.min.css"
+          rel="stylesheet" type="text/css"/>
+{% endblock %}
+
+{% block js %}
+    <script src="/static/system/plugins/bower_components/custom-select/custom-select.min.js"
+            type="text/javascript"></script>
+    <script src="/static/system/plugins/bower_components/jquery-sparkline/jquery.sparkline.min.js"></script>
+    <script src="/static/system/plugins/bower_components/jquery-sparkline/jquery.charts-sparkline.js"></script>
+    <script src="/static/system/plugins/bower_components/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.min.js"></script>
+    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.es.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".select2").select2();
+            $('#myTable').DataTable();
+            ajaxPost('/ajax/payments/report_main/', function (content) {
+                $("#ingmxn").html(content['ingmxn'])
+                $("#ingusd").html(content['ingusd'])
+                $("#idpagos").html(content['pagos'])
+                $("#idcxc").html(content['cxc'])
+            });
+            $('#button_add_pago').click(function () {
+                ajaxPost('/ajax/payments/payment/', $("#payment-form").serialize(), function (content) {
+                    if (content == 1) {
+                        $('#add-pagos-modal').modal('hide')
+                        location.reload()
+                    } else {
+                        $('#modal-body-payment').html('');
+                        $('#modal-body-payment').append(content);
+                    }
+                })
+            });
+        });
+        var impfalmxn = 0
+        var impfalusd = 0
+        function checkmoney() {
+            fac = $('#id_factura').val()
+            if (fac != '') {
+                ajaxPost('/ajax/payments/checkmoney/', {factura: fac}, function (content) {
+                    if (content != 0) {
+                        if (content["moneda"] == 'MXN') {
+                            $("label[for='id_importe']").text("Importe a pagar en MXN:");
+                            $("#id_moneda").html('')
+                            $("#id_moneda").append("<option value='MXN' selected=''>Pesos</option>");
+                            $("#id_importe").attr("placeholder", "Faltan por pagar " + content["importe"] + " pesos");
+                        }
+                        if (content["moneda"] == 'USD') {
+                            $("label[for='id_importe']").text("Importe a pagar en USD:");
+                            $("#id_moneda").html('')
+                            $("#id_moneda").append("<option value='USD' selected=''>Dollar</option>");
+                            $("#id_importe").attr("placeholder", "Faltan por pagar " + content["importe"] + " dollar");
+                        }
+                        if (content["moneda"] == 'MXN-USD') {
+                            $("#id_moneda").html('')
+                            $("label[for='id_importe']").text("Importe a pagar:");
+                            $("#id_importe").attr("placeholder", "")
+                            $("#id_moneda").attr("onchange", "viewmoneyfalt(this);")
+                            this.impfalmxn = content['importemxn']
+                            this.impfalusd = content['importeusd']
+                            $("#id_moneda").append("<option value=''>--------</option><option value='MXN'>Pesos</option>" +
+                                "<option value='USD'>Dollar</option>");
+                        }
+                    }
+                })
+            }
+        }
+        function viewmoneyfalt(option) {
+            if ($(option).val() == 'MXN') {
+                $("#id_importe").attr("placeholder", "Faltan por pagar " + this.impfalmxn + " pesos")
+            }
+            if ($(option).val() == 'USD') {
+                $("#id_importe").attr("placeholder", "Faltan por pagar " + this.impfalusd + " dollar")
+            }
+        }
+        $("#id_cliente").change(function () {
+            var clienteid = $(this).val()
+            if (clienteid != '') {
+                ajaxPost('/ajax/payments/get_payments_client/', {cliente: clienteid}, function (content) {
+                    $('#payments_client_content').html(content)
+                    $('#myTable2').DataTable();
+                })
+            }
+
+        });
+        function DataTime(id) {
+            $("#" + id).datetimepicker({
+                language: 'es',
+                weekStart: 1,
+                todayBtn: 1,
+                autoclose: 1,
+                todayHighlight: 1,
+                startView: 2,
+                forceParse: 0,
+                showMeridian: 2
+            });
+        }
+    </script>
+
+{% endblock %}
