@@ -1,0 +1,23 @@
+<form action="" id="pista-form" data-toggle="validator" method="post">{% csrf_token %}
+    <div class="form-body">
+        <div class="row">
+            {% for field in pista_form %}
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label">{{ field.label_tag }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            {% for f in field.errors %}
+                                <span class="alert-block"><small>{{ f|safe }}</small></span>
+                            {% endfor %}
+                        {% else %}
+                            {% if field.help_text %}
+                                <span class="help-block"><small>{{ field.help_text|safe }}</small></span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</form>

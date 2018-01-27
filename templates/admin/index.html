@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block main-content %}
+    <div class="row">
+        {% if app_list %}
+            {% for app in app_list %}
+                <div class="col-sm-6">
+                <div class="white-box">
+                <h3 class="box-title">{{ app.name }}</h3>
+                <div class="table-responsive">
+                    <table class="table color-bordered-table info-bordered-table">
+                        <thead>
+                        <tr>
+                            <th>Modelos</th>
+                            <th class="text-right">Opciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for model in app.models %}
+                            <tr class="model-{{ model.object_name|lower }}">
+                            {% if model.admin_url %}
+                                <td scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></td>
+                            {% else %}
+                                <td scope="row">{{ model.name }}</td>
+                            {% endif %}
+                            {% if model.admin_url %}
+                                <td class="text-right">
+                                    <a href="{{ model.add_url }}" data-toggle="tooltip" data-original-title="Agregar"
+                                       class="addlink"><i class="fa fa-plus text-inverse m-r-10"></i></a>
+                                    <a href="{{ model.admin_url }}" data-toggle="tooltip"
+                                       data-original-title="Modificar" class="changelink"><i
+                                            class="fa fa-pencil text-inverse m-r-10"></i></a></td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
+                </div>
+            {% endfor %}
+        </div>
+        </div>
+        {% else %}
+            <p>{% trans "You don't have permission to edit anything." %}</p>
+        {% endif %}
+
+        <div class="col-md-4 col-lg-4 col-xs-12">
+            <div class="white-box">
+                <h3 class="box-title">{% trans 'Recent actions' %}</h3>
+                <p class="text-muted">{% trans 'My actions' %}</p>
+                {% load log %}
+            {% get_admin_log 10 as admin_log for_user user %}
+            {% if not admin_log %}
+                <p>{% trans 'None available' %}</p>
+            {% else %}
+                <ul class="basic-list">
+                    {% for entry in admin_log %}
+                        <li>
+                            {% if entry.is_deletion or not entry.get_admin_url %}
+                                <span class="text-blue">{{ entry.object_repr }}</span>
+                            {% else %}
+                                <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                            {% endif %}
+                            <br/>
+                            {% if entry.content_type %}
+                                <span class="mini quiet">{% filter capfirst %}
+                                    {{ entry.content_type }}{% endfilter %}</span>
+                                <span class="pull-right {% if entry.is_addition %}text-success fa fa-plus{% endif %}{% if entry.is_change %}text-warning fa fa-pencil{% endif %}{% if entry.is_deletion %}text-danger fa fa-close{% endif %}"></span>
+                            {% else %}
+                                <span class="mini quiet">{% trans 'Unknown content' %}</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

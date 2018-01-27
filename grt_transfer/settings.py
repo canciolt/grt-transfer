@@ -74,7 +74,7 @@ WSGI_APPLICATION = 'grt_transfer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'grt_transfer',
+        'NAME': 'grt_transfer_db',
         'USER': 'root',
         'PASSWORD': 'AdMysqlDB',
         'HOST': '127.0.0.1',

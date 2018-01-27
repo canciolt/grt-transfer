@@ -48,6 +48,7 @@
                                     <th class="text-center">Fecha</th>
                                     <th class="text-center">Servicio</th>
                                     <th class="text-center">IVA</th>
+                                    <th class="text-center">Retención</th>
                                     <th class="text-right">Importe MX</th>
                                     <th class="text-right">Importe USD</th>
                                 </tr>
@@ -56,9 +57,12 @@
                                 {% for l in operaciones %}
                                     <tr>
                                         <td class="text-center">{{ l.id }}</td>
-                                        <td class="text-center">{{ l.fecha_inicio|date:"D d M Y" }}</td>
+                                        <td class="text-center">{{ l.fecha|date:"D d M Y" }}</td>
                                         <td class="text-center">{{ l.servicio }}</td>
                                         <td class="text-center">{% if l.servicio.iva %}
+                                            <i class="fa fa-check-square-o text-success"></i>{% else %}
+                                            <i class="fa fa-times-circle text-danger">{% endif %}</td>
+                                        <td class="text-center">{% if l.servicio.retencion %}
                                             <i class="fa fa-check-square-o text-success"></i>{% else %}
                                             <i class="fa fa-times-circle text-danger">{% endif %}</td>
                                         <td class="text-right">{{ l.importemxn }}</td>
@@ -83,14 +87,16 @@
                         {% if object.total_usd > 0 %}
                             <div id="resume-usd-div" class="pull-right m-t-30 text-right">
                                 <p>Sub - Total USD: $ {{ extra.subtotalusd }}</p>
-                                <p>IVA : $ 0.0 </p>
+                                <p>IVA : No aplica </p>
+                                <p>Retención : No aplica </p>
                                 <hr>
                                 <h3><b>Total USD :</b> $ {{ object.total_usd }}</h3></div>
                         {% endif %}
                         {% if object.total_mx > 0 %}
                             <div id="resume-mnx-div" class="pull-right m-t-30 m-r-30 text-right">
                                 <p>Sub - Total MXN: $ {{ extra.subtotalmx }}</p>
-                                <p>IVA (16%) : $ {{ extra.iva }} </p>
+                                <p>IVA (+16%) : $ {{ extra.iva }} </p>
+                                <p>Retención (-4%) : $ {{ extra.retencion }} </p>
                                 {% if object.tasa_cambio != 0 %}
                                     <p>Tasa de cambio : $ {{ object.tasa_cambio }} </p>{% endif %}
                                 <hr>

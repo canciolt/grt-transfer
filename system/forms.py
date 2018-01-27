@@ -40,6 +40,82 @@ class CamionForm(forms.ModelForm):
         }
 
 
+class Combustible_Form(forms.ModelForm):
+
+    class Meta:
+        model = Combustible
+        fields = ['camion_id', 'operador_id', 'fecha', 'millaje', 'litros']
+        widgets = {
+            'camion_id': forms.TextInput(attrs={'style': 'visibility:hidden; position:absolute;'}),
+            'operador_id': forms.Select(attrs={'class': 'form-control select2'}),
+            'millaje': forms.TextInput(attrs={'class': 'form-control'}),
+            'litros': forms.TextInput(attrs={'class': 'form-control', }),
+            'millaje': forms.TextInput(attrs={'class': 'form-control'}),
+            'fecha': forms.DateTimeInput(
+                attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
+                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover": "DataTime(this.id);"}),
+        }
+
+    def clean(self):
+        cleaned_data = super(Combustible_Form, self).clean()
+        camion = cleaned_data.get('camion_id')
+        fecha = cleaned_data.get('fecha')
+        millaje = cleaned_data.get('millaje')
+        litros = cleaned_data.get('litros')
+        ult_carga = Combustible.objects.filter(camion_id=camion)
+        if litros:
+            pista = Pista.objects.aggregate(models.Sum('litros'))
+            consumo = Combustible.objects.aggregate(models.Sum('litros'))
+            if pista['litros__sum'] == None: pista['litros__sum'] = 0
+            if consumo['litros__sum'] == None: consumo['litros__sum'] = 0
+            if litros > pista['litros__sum'] - consumo['litros__sum']:
+                self.add_error('litros', 'Ha excedido la cantidad en pista')
+        if ult_carga.count() != 0:
+            if fecha:
+                if ult_carga.latest('fecha').fecha >= fecha:
+                    self.add_error('fecha', 'La fecha debe ser mayor a la ultima carga registrada.')
+            if millaje:
+                if ult_carga.latest('fecha').millaje >= millaje:
+                    self.add_error('millaje', 'El millaje debe ser superior al registrado anteriormente.')
+        else:
+            if millaje:
+                if camion.millaje >= millaje:
+                    self.add_error('millaje', 'El millaje debe ser superior al registrado anteriormente.')
+
+
+class Pista_Form(forms.ModelForm):
+
+    class Meta:
+        model = Pista
+        fields = ['fecha', 'litros']
+        widgets = {
+            'litros': forms.TextInput(attrs={'class': 'form-control', }),
+            'fecha': forms.DateTimeInput(
+                attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
+                       "placeholder": "dd/mm/yyyy hh:ii:ss", "onmouseover": "DataTime(this.id);"}),
+        }
+"""
+    def clean(self):
+        cleaned_data = super(Pista_Form, self).clean()
+        camion = cleaned_data.get('camion_id')
+        fecha = cleaned_data.get('fecha')
+        millaje = cleaned_data.get('millaje')
+        ult_carga = Combustible.objects.filter(camion_id=camion)
+        if ult_carga.count() != 0:
+            if fecha:
+                if ult_carga.latest('fecha').fecha >= fecha:
+                    self.add_error('fecha', 'La fecha debe ser mayor a la ultima carga registrada.')
+            if millaje:
+                if ult_carga.latest('fecha').millaje >= millaje:
+                    self.add_error('millaje', 'El millaje debe ser superior al registrado anteriormente.')
+        else:
+            if millaje:
+                if camion.millaje >= millaje:
+                    self.add_error('millaje', 'El millaje debe ser superior al registrado anteriormente.')
+"""
+
+
+
 class OperadorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(OperadorForm, self).__init__(*args, **kwargs)
@@ -337,15 +413,15 @@ class Cliente_Form(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['usuario', 'pais', 'estado', 'direccion', 'cpostal', 'rfc', \
-                  'telefono', 'tax', 'credito', 'facturacion', 'descripcion']
+                  'tax', 'telefono', 'credito', 'facturacion', 'descripcion']
         widgets = {
             'pais': forms.Select(attrs={'class': 'form-control select2'}),
             'estado': forms.Select(attrs={'class': 'form-control select2'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control'}),
             'cpostal': forms.TextInput(attrs={'class': 'form-control'}),
-            'rfc': forms.TextInput(attrs={'class': 'form-control'}),
+            'rfc': forms.TextInput(attrs={'class': 'form-control', 'disabled': '',}),
             'telefono': forms.TextInput(attrs={'class': 'form-control', }),
-            'tax': forms.TextInput(attrs={'class': 'form-control', }),
+            'tax': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', }),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'cols': 4}),
             'facturacion': forms.NumberInput(attrs={'class': 'form-control'}),
             'credito': forms.TextInput(attrs={'class': 'form-control'}),
@@ -410,34 +486,10 @@ class Patio_Form(forms.ModelForm):
         }
 
 
-class Caja_Form(forms.ModelForm):
-    class Meta:
-        model = Caja
-        fields = ['numero', 'cliente', 'fecha_entrada', 'fecha_salida', 'observaciones']
-        widgets = {
-            'numero': forms.TextInput(attrs={'class': 'form-control'}),
-            'cliente': forms.Select(attrs={'class': 'form-control select2'}),
-            'fecha_entrada': forms.DateTimeInput(
-                attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
-                       "placeholder": "dd/mm/yyyy hh:ii:ss"}),
-            'fecha_salida': forms.DateTimeInput(
-                attrs={'class': 'form-control date form_datetime', "data-date-format": 'dd/mm/yyyy hh:ii:ss',
-                       "placeholder": "dd/mm/yyyy hh:ii:ss"}),
-            'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'cols': 4}),
-        }
-
-    def clean(self):
-        cleaned_data = super(Caja_Form, self).clean()
-        fecha_entrada = cleaned_data.get('fecha_entrada')
-        fecha_salida = cleaned_data.get('fecha_salida')
-        if fecha_salida <= fecha_entrada:
-            self.add_error('fecha_salida', 'Fecha de salida debe ser mayor a la de entrada.')
-
-
 class Servicio_Cruce_Form(forms.ModelForm):
     class Meta:
         model = Servicio_Cruce
-        fields = ['cliente', 'tipo', 'aduana', 'remolque', 'importemx', 'importeusd', 'iva']
+        fields = ['cliente', 'tipo', 'aduana', 'remolque', 'importemx', 'importeusd', 'iva', 'retencion']
         widgets = {
             'cliente': forms.Select(attrs={'class': 'form-control select2'}),
             'tipo': forms.Select(attrs={'class': 'form-control select2'}),
@@ -446,6 +498,8 @@ class Servicio_Cruce_Form(forms.ModelForm):
             'importemx': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', 'value': 0}),
             'importeusd': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', 'value': 0}),
             'iva': forms.CheckboxInput(
+                attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
+            'retencion': forms.CheckboxInput(
                 attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
         }
 
@@ -464,7 +518,7 @@ class Servicio_Cruce_Form(forms.ModelForm):
 class Servicio_Extra_Form(forms.ModelForm):
     class Meta:
         model = Servicio_Extra
-        fields = ['cliente', 'tipo', 'importemx', 'importeusd', 'hlibres', 'iva']
+        fields = ['cliente', 'tipo', 'importemx', 'importeusd', 'iva', 'retencion', 'hlibres']
         widgets = {
             'cliente': forms.Select(attrs={'class': 'form-control select2'}),
             'tipo': forms.Select(attrs={'class': 'form-control select2'}),
@@ -472,6 +526,8 @@ class Servicio_Extra_Form(forms.ModelForm):
             'importemx': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', 'value': 0}),
             'importeusd': forms.TextInput(attrs={'class': 'form-control', 'disabled': '', 'value': 0}),
             'iva': forms.CheckboxInput(
+                attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
+            'retencion': forms.CheckboxInput(
                 attrs={'class': 'js-switch', 'data-color': "#66cc66", 'data-secondary-color': "#f96262", }),
         }
 
@@ -517,7 +573,7 @@ class Operacion_Form(forms.ModelForm):
             'consignatario': forms.Select(attrs={'class': 'form-control select2'}),
             'servicio': forms.Select(attrs={'class': 'form-control select2'}),
             'pedimento': forms.TextInput(attrs={'class': 'form-control'}),
-            'caja': forms.Select(attrs={'class': 'form-control select2'}),
+            'caja': forms.TextInput(attrs={'class': 'form-control'}),
             'origen': forms.Select(attrs={'class': 'form-control select2'}),
             'destino': forms.Select(attrs={'class': 'form-control select2'}),
             'referencia': forms.TextInput(attrs={'class': 'form-control'}),

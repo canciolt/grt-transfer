@@ -36,6 +36,8 @@ urlpatterns = [
     url(r'^ajax/payments/startpay/$', startpay, name='ajax-startpay'),
     url(r'^ajax/payments/get_payments_client/$', get_payments_client, name='ajax-get-payments-client'),
     url(r'^ajax/payments/report_main/$', report_main, name='ajax-payments-reportmain'),
+    url(r'^ajax/camion/add_comb/$', add_comb, name='ajax-camion-add_comb'),
+    url(r'^ajax/camion/add_comb_pista/$', add_comb_pista, name='ajax-camion-add_comb_pista'),
 
     # Generate pdf
     url(r'^pdf/factura/get_factura/(?P<pk>[\d+]+)$', MyPDFView.as_view(), name='pdf-get-factura'),

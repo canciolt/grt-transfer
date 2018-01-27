@@ -10,7 +10,7 @@ from system.views import get_tasa_cambio
 from datetime import datetime, timedelta
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_protect
-from system.forms import Sellos_Form, Evento_Form, Concepto_Form, Pagos_Form
+from system.forms import *
 from django.conf import settings
 import json
 import os
@@ -39,15 +39,10 @@ def get_ciudades(request):
 def get_data_form(request):
     if request.method == 'POST':
         client = request.POST['cliente']
-        if 'cajaop' in request.POST:
-            cajaop = request.POST['cajaop']
-        else:
-            cajaop = 0
         choice = dict()
         extra = []
         cruce = []
         consig = []
-        caja = []
         if client != '':
             servicios = Servicio.objects.filter(cliente=client)
             for c in servicios:
@@ -60,20 +55,9 @@ def get_data_form(request):
             consignatarios = Consignatario.objects.filter(cliente=client, usuario__is_active=True)
             for c in consignatarios:
                 consig.append((c.id, c.usuario.first_name))
-            if cajaop != 0:
-                cajas = (
-                    Caja.objects.filter(pk=cajaop, cliente=client) | Caja.objects.filter(cliente=client, estado=False,
-                                                                                         fecha_entrada__lte=datetime.now(),
-                                                                                         fecha_salida__gt=datetime.now())).distinct()
-            else:
-                cajas = Caja.objects.filter(cliente=client, estado=False, fecha_entrada__lte=datetime.now(),
-                                            fecha_salida__gt=datetime.now())
-            for c in cajas:
-                caja.append((c.id, c.numero))
             choice['cruce'] = cruce
             choice['extra'] = extra
             choice['consig'] = consig
-            choice['caja'] = caja
         return choice
     raise Http404
 
@@ -89,6 +73,7 @@ def facturar(request):
         operaciones = []
         cliente = get_object_or_404(Cliente, pk=int(client))
         iva = 0
+        retencion = 0
         subtotalmx = 0
         subtotalusd = 0
         totalmx = 0
@@ -102,15 +87,19 @@ def facturar(request):
             subtotalusd += imp_usd
             if temp_op.servicio.iva == True:
                 iva += imp_mxn * 0.16
+            if temp_op.servicio.retencion == True:
+                retencion += imp_mxn * 0.04
             for conc in conc_operacion:
                 subtotalusd += conc.costo_usd
                 subtotalmx += conc.costo_mx
                 if temp_op.servicio.iva == True:
                     iva += conc.costo_mx * 0.16
+                if temp_op.servicio.retencion == True:
+                    retencion += conc.costo_mx * 0.04
             operaciones.append({"id": temp_op.id, "fecha": temp_op.fecha_inicio, "servicio": temp_op.servicio, \
                                 "consignatario": temp_op.consignatario, "importeusd": imp_usd, "importemxn": imp_mxn,
                                 "conceptos": conc_operacion})
-        totalmx += subtotalmx + iva
+        totalmx += subtotalmx + iva - retencion
         totalusd += subtotalusd
         if 'approved' in request.POST:
             cadena = str(timezone.now().year) + "-" + str(cliente.id)
@@ -141,7 +130,7 @@ def facturar(request):
                 return 0
         else:
             filePath = os.path.join(settings.BASE_DIR, "system/templates/prefactura_form.html")
-            context = {'cliente': cliente, "operaciones": operaciones, "iva": iva, "subtotalmx": subtotalmx, \
+            context = {'cliente': cliente, "operaciones": operaciones, "iva": iva, "retencion": retencion, "subtotalmx": subtotalmx, \
                        "subtotalusd": subtotalusd, "totalmx": totalmx, "totalusd": totalusd}
             return render(request, filePath, context)
     else:
@@ -295,6 +284,45 @@ def add_payment(request):
             return render(request, filePath, context)
     raise Http404
 
+@login_required
+@ajax
+@csrf_protect
+def add_comb(request):
+    if request.method == 'POST':
+        if 'camion' in request.POST:
+            camion_id = request.POST['camion']
+            form = Combustible_Form(initial={"camion_id": camion_id})
+            filePath = os.path.join(settings.BASE_DIR, "system/templates/combustible_form.html")
+            context = {'form_comb': form}
+            return render(request, filePath, context)
+        else:
+            form = Combustible_Form(data=request.POST)
+            if form.is_valid():
+                form.save()
+                messages.add_message(request, messages.SUCCESS, 'Combustible agregado satisfactoriamente')
+                return 1
+            else:
+                filePath = os.path.join(settings.BASE_DIR, "system/templates/combustible_form.html")
+                context = {'form_comb': form}
+                return render(request, filePath, context)
+    raise Http404
+
+@login_required
+@ajax
+@csrf_protect
+def add_comb_pista(request):
+    if request.method == 'POST':
+        form = Pista_Form(data=request.POST)
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.SUCCESS, 'Pista habilitada satisfactoriamente')
+            return 1
+        else:
+            filePath = os.path.join(settings.BASE_DIR, "system/templates/pista_form.html")
+            context = {'pista_form': form}
+            return render(request, filePath, context)
+    raise Http404
+
 
 @login_required
 @ajax
@@ -351,9 +379,9 @@ def checkmoney(request):
                 if p.moneda == "USD":
                     totalpagosusd += p.importe
             if factura.total_mx == 0 and factura.total_usd > 0:
-                return {"moneda": "USD", "importe": factura.total_usd - totalpagosusd}
+                return {"moneda": "USD", "importe": round(factura.total_usd - totalpagosusd, 2)}
             if factura.total_mx > 0 and factura.total_usd == 0:
-                return {"moneda": "MXN", "importe": factura.total_mx - totalpagosmxn}
+                return {"moneda": "MXN", "importe": round(factura.total_mx - totalpagosmxn, 2)}
             if factura.total_mx > 0 and factura.total_usd > 0:
                 return {"moneda": "MXN-USD", "importemxn": round(factura.total_mx - totalpagosmxn, 2),
                         "importeusd": round(factura.total_usd - totalpagosusd, 2)}
@@ -387,7 +415,11 @@ def get_payments_client(request):
         if 'cliente' in request.POST:
             cliente = request.POST['cliente']
             payments = []
-            pagos = Pagos.objects.filter(factura__cliente=cliente).order_by('-fecha', 'factura')
+            mxn = 0
+            usd = 0
+            pagos = Pagos.objects.filter(factura__cliente= cliente, estado='A').order_by('-fecha', 'factura')
+            fp = Factura.objects.filter(cliente= cliente, estado= 'A').count()
+            fv = Factura.objects.filter(cliente= cliente, estado= 'A', expira__lt= timezone.now()).count()
             for p in pagos:
                 fvencimiento = p.factura.expira
                 fpago = p.fecha
@@ -398,8 +430,12 @@ def get_payments_client(request):
                 payments.append(
                     {"factura": p.factura, "fecha": p.fecha, "metodo": p.get_metodo_display, \
                      "cuenta": p.get_cuenta_display, "importe": p.importe, "moneda": p.moneda, "dvencidos": dvencidos})
+                if p.moneda == 'MXN':
+                    mxn += p.importe
+                if p.moneda == 'USD':
+                    usd += p.importe
             filePath = os.path.join(settings.BASE_DIR, "system/templates/payments_client.html")
-            context = {'payments': payments}
+            context = {'payments': payments, 'mxn':mxn, 'usd':usd, 'fp':fp, 'fv':fv}
             return render(request, filePath, context)
         else:
             raise Http404
@@ -422,9 +458,6 @@ def event_add(request):
                 ope = get_object_or_404(Operador, pk=operacion.operador.id)
                 ope.estado = False
                 ope.save()
-                ca = get_object_or_404(Caja, pk=operacion.caja.id)
-                ca.estado = False
-                ca.save()
             if request.POST['evento'] == "FIN":
                 operacion = get_object_or_404(Operacion, pk=request.POST['operacion'])
                 operacion.estado = "T"
@@ -432,9 +465,6 @@ def event_add(request):
                 ope = get_object_or_404(Operador, pk=operacion.operador.id)
                 ope.estado = False
                 ope.save()
-                ca = get_object_or_404(Caja, pk=operacion.caja.id)
-                ca.estado = False
-                ca.save()
             messages.add_message(request, messages.SUCCESS, 'Evento agregado satisfactoriamente')
             return 1
         else:

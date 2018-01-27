@@ -161,6 +161,12 @@
     <script>
             jQuery(document).ready(function () {
                 // Switch
+                {% if accion == 'update' %}
+                    rfc = $("#id_rfc").val()
+                    tax = $("#id_tax").val()
+                    if (rfc != ""){$("#id_rfc").prop('disabled',false);}
+                    if (tax != ""){$("#id_tax").prop('disabled',false);}
+                {% endif %}
                 $('.formset_row').formset({prefix:'contactos_clientes_set'});
                 $('.formset_row2').formset({prefix:'despachador_cliente_set'});
                 $( "#id_username" ).blur(function() {
@@ -178,6 +184,8 @@
                     });
                     })
                     $('div.estado').unblock();
+                    if($("#id_pais").val() == "MX"){$("#id_rfc").prop('disabled',false);$("#id_tax").prop('disabled',true);$("#id_tax").prop('value',"");}
+                    if($("#id_pais").val() == "US"){$("#id_rfc").prop('disabled',true);$("#id_rfc").prop('value',"");$("#id_tax").prop('disabled',false);}
                 });
                 $('.js-switch').each(function () {
                     new Switchery($(this)[0], $(this).data());

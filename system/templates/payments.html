@@ -2,13 +2,14 @@
 {% load staticfiles %}
 
 {% block main-content %}
+
     <div class="row">
         <div class="col-lg-3 col-sm-3 col-xs-12">
             <div class="white-box analytics-info">
                 <h3 class="box-title">Ingresos en MNX</h3>
                 <ul class="list-inline two-part">
                     <li>
-                        <div id="sparklinedash"></div>
+                        <i class="fa fa-money text-info"></i>
                     </li>
                     <li class="text-right"><i class="ti-money text-info"></i>
                         <span id="ingmxn" class="counter text-info"></span></li>
@@ -20,7 +21,7 @@
                 <h3 class="box-title">Ingresos en USD</h3>
                 <ul class="list-inline two-part">
                     <li>
-                        <div id="sparklinedash2"></div>
+                        <i class="fa fa-dollar text-success"></i>
                     </li>
                     <li class="text-right"><i class="ti-money text-success"></i>
                         <span id="ingusd" class="counter text-success"></span></li>
@@ -32,10 +33,10 @@
                 <h3 class="box-title">Pagos</h3>
                 <ul class="list-inline two-part">
                     <li>
-                        <div id="sparklinedash3"></div>
+                        <i class="fa fa-sign-in text-success"></i>
                     </li>
                     <li class="text-right">
-                        <span id="idpagos" class="counter text-purple"></span>
+                        <span id="idpagos" class="counter text-success"></span>
                     </li>
                 </ul>
             </div>
@@ -45,7 +46,7 @@
                 <h3 class="box-title">Cuentas por cobrar</h3>
                 <ul class="list-inline two-part">
                     <li>
-                        <div id="sparklinedash4"></div>
+                        <i class="fa fa-exclamation-triangle text-danger"></i>
                     </li>
                     <li class="text-right"><span id="idcxc" class="text-danger"></span></li>
                 </ul>
@@ -167,8 +168,6 @@
 {% block js %}
     <script src="/static/system/plugins/bower_components/custom-select/custom-select.min.js"
             type="text/javascript"></script>
-    <script src="/static/system/plugins/bower_components/jquery-sparkline/jquery.sparkline.min.js"></script>
-    <script src="/static/system/plugins/bower_components/jquery-sparkline/jquery.charts-sparkline.js"></script>
     <script src="/static/system/plugins/bower_components/datatables/jquery.dataTables.min.js"></script>
     <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.min.js"></script>
     <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.es.js"></script>

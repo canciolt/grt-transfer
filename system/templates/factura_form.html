@@ -175,6 +175,7 @@
                                 "is_fmxn": $("#id-is-fmxn").prop("checked")
                             }, function (content) {
                                 location.reload();
+                                location.href = '/list/factura/';
                             })
                         } else {
                             ajaxPost('/ajax/factura/facturar/', {

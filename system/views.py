@@ -95,10 +95,10 @@ class LoginView(FormView):
 class Dinamic_Add(SuccessMessageMixin, CreateView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "cliente": Cliente, "consignatario": Consignatario, "patio": Patio, "servicio": Servicio_Cruce, \
-              "servicio_ext": Servicio_Extra, "caja": Caja, "operacion": Operacion, "factura": Factura}
+              "servicio_ext": Servicio_Extra, "operacion": Operacion, "factura": Factura}
     forms = {"camion": CamionForm, "operador": OperadorForm, "reparacion": Repcamion_Form, \
              "cliente": Cliente_Form, "consignatario": Consignatario_Form, "patio": Patio_Form, \
-             "servicio": Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, "caja": Caja_Form, \
+             "servicio": Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, \
              "operacion": Operacion_Form, "factura": Factura_Form}
 
     @method_decorator(login_required)
@@ -225,15 +225,11 @@ class Dinamic_Add(SuccessMessageMixin, CreateView):
         if self.model == Operacion:
             s = form.cleaned_data['sello']
             operador = form.cleaned_data['operador']
-            caja = form.cleaned_data['caja']
             with transaction.atomic():
                 operacion = form.save()
                 ope = get_object_or_404(Operador, pk=operador.id)
                 ope.estado = True
                 ope.save()
-                ca = get_object_or_404(Caja, pk=caja.id)
-                ca.estado = True
-                ca.save()
                 sello = Sello_Operacion()
                 sello.operacion = operacion
                 sello.sello = s
@@ -248,11 +244,11 @@ class Dinamic_Add(SuccessMessageMixin, CreateView):
 class Dinamic_Update(SuccessMessageMixin, UpdateView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "usuario": User, "cliente": Cliente, "consignatario": Consignatario, "patio": Patio, \
-              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "caja": Caja, "operacion": Operacion}
+              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "operacion": Operacion}
     forms = {"camion": CamionForm, "operador": OperadorForm, "reparacion": Repcamion_Form, \
              "usuario": User_Form, "cliente": Cliente_Form, "consignatario": Consignatario_Form, \
              "patio": Patio_Form, "servicio": Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, \
-             "caja": Caja_Form, "operacion": Operacion_Form}
+             "operacion": Operacion_Form}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -341,17 +337,12 @@ class Dinamic_Update(SuccessMessageMixin, UpdateView):
         if self.model == Operacion:
             sello = Sello_Operacion.objects.filter(sello=form.cleaned_data['sello']).count()
             operador = get_object_or_404(Operador, pk=form.cleaned_data['operador'].id)
-            caja = get_object_or_404(Caja, pk=form.cleaned_data['caja'].id)
             operacion = get_object_or_404(Operacion, pk=self.object.id)
             with transaction.atomic():
                 operacion.operador.estado = False
                 operacion.operador.save()
                 operador.estado = True
                 operador.save()
-                operacion.caja.estado = False
-                operacion.caja.save()
-                caja.estado = True
-                caja.save()
                 if sello == 0:
                     s = Sello_Operacion()
                     s.operacion = operacion
@@ -359,14 +350,24 @@ class Dinamic_Update(SuccessMessageMixin, UpdateView):
                     s.fecha = datetime.now()
                     s.observaciones = "Sello de salida"
                     s.save()
+        if self.model == Servicio_Cruce:
+            nfacturas = Factura_Operacion.objects.filter(operacion__servicio=self.object.id).count()
+            if nfacturas > 0:
+                messages.add_message(self.request, messages.ERROR, 'No se puede modificar servicios con operaciones facturadas.')
+                return redirect(self.success_url)
+        if self.model == Servicio_Extra:
+            nfacturas = Factura_Operacion.objects.filter(operacion__servicio=self.object.id).count()
+            if nfacturas > 0:
+                messages.add_message(self.request, messages.ERROR, 'No se puede modificar servicios con operaciones facturadas.')
+                return redirect(self.success_url)
         return super(Dinamic_Update, self).form_valid(form)
 
 
 class Dinamic_List(ListView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "usuario": User, "cliente": Cliente, "patio": Patio, "servicio": Servicio, "operacion": Operacion, \
-              "caja": Caja, "oppendientes": Operacion, "factura": Factura, "facturaspagadas": Factura, \
-              "facturascanceladas": Factura, "opterminadas": Operacion, "opcanceladas": Operacion}
+              "oppendientes": Operacion, "factura": Factura, "facturaspagadas": Factura, \
+              "facturascanceladas": Factura, "opterminadas": Operacion, "opcanceladas": Operacion, "combustible": Combustible}
     pk_model = ""
 
     @method_decorator(login_required)
@@ -387,6 +388,13 @@ class Dinamic_List(ListView):
         if self.model == Servicio:
             context['cruce'] = Servicio_Cruce.objects.all()
             context['extra'] = Servicio_Extra.objects.all()
+        if self.model == Combustible:
+            pista = Pista.objects.aggregate(models.Sum('litros'))
+            consumo = Combustible.objects.aggregate(models.Sum('litros'))
+            if pista['litros__sum'] == None: pista['litros__sum'] = 0
+            if consumo['litros__sum'] == None: consumo['litros__sum'] = 0
+            context['pista_lts'] = pista['litros__sum'] - consumo['litros__sum']
+            context['pista_form'] = Pista_Form()
         return context
 
     def get_queryset(self):
@@ -411,8 +419,8 @@ class Dinamic_List(ListView):
 class Dinamic_Delete(SuccessMessageMixin, DeleteView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "usuario": User, "cliente": Cliente, "consignatario": Consignatario, "patio": Patio, \
-              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "caja": Caja, "operacion": Operacion, \
-              "payment": Pagos}
+              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "operacion": Operacion, \
+              "payment": Pagos, "combustible": Combustible}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -456,9 +464,6 @@ class Dinamic_Delete(SuccessMessageMixin, DeleteView):
                         ope = get_object_or_404(Operador, pk=operacion.operador.id)
                         ope.estado = False
                         ope.save()
-                        ca = get_object_or_404(Caja, pk=operacion.caja.id)
-                        ca.estado = False
-                        ca.save()
                 else:
                     messages.add_message(request, messages.ERROR, 'Solo se pueden eliminar operaciones pendientes !')
                     return redirect(self.success_url)
@@ -477,7 +482,7 @@ class Dinamic_Delete(SuccessMessageMixin, DeleteView):
 class Dinamic_Detail(DetailView):
     models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
               "cliente": Cliente, "patio": Patio, "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, \
-              "caja": Caja, "operacion": Operacion, "factura": Factura}
+              "operacion": Operacion, "factura": Factura}
 
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
@@ -526,6 +531,7 @@ class Dinamic_Detail(DetailView):
             opera = Factura_Operacion.objects.filter(factura=self.object.id)
             operaciones = []
             iva = 0
+            retencion = 0
             subtotalmx = 0
             subtotalusd = 0
             totalmx = 0
@@ -538,11 +544,15 @@ class Dinamic_Detail(DetailView):
                 subtotalusd += imp_usd
                 if o.operacion.servicio.iva == True:
                     iva += imp_mxn * 0.16
+                if o.operacion.servicio.retencion == True:
+                    retencion += imp_mxn * 0.04
                 for conc in conc_operacion:
                     subtotalusd += conc.costo_usd
                     subtotalmx += conc.costo_mx
                     if o.operacion.servicio.iva == True:
                         iva += conc.costo_mx * 0.16
+                    if o.operacion.servicio.retencion == True:
+                        retencion += conc.costo_mx * 0.04
                 operaciones.append(
                     {"id": o.operacion.id, "fecha": o.operacion.fecha_inicio, "servicio": o.operacion.servicio, \
                      "consignatario": o.operacion.consignatario, "importeusd": imp_usd,
@@ -551,7 +561,7 @@ class Dinamic_Detail(DetailView):
             totalmx += subtotalmx + iva
             totalusd += subtotalusd
             extra = {"subtotalusd": subtotalusd, "totalusd": totalusd, "subtotalmx": subtotalmx, "totalmx": totalmx,
-                     "iva": iva}
+                     "iva": iva, "retencion": retencion}
             context['operaciones'] = operaciones
             context['extra'] = extra
         return context

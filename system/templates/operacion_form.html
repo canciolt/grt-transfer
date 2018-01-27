@@ -32,17 +32,7 @@
                                                               {% endif %}
                                                             </select>
                                                         {% else %}
-                                                        {% if field.name == "caja" %}
-                                                            <select name="caja" required="" class="form-control select2" id="id_caja">
-                                                              {% if object %}
-                                                                  <option value="{{ object.caja.id }}" selected="">{{ object.caja }}</option>
-                                                              {% else %}
-                                                                  <option value="" selected="">---------</option>
-                                                              {% endif %}
-                                                            </select>
-                                                        {% else %}
                                                         {{ field }}
-                                                        {% endif %}
                                                         {% endif %}
                                                         {% endif %}
                                                         {% if field.errors %}
@@ -104,11 +94,6 @@
                            border: '1px solid #fff'
                        }
                    });
-                   $('div.caja').block({
-                       message: '<h4><img src="/static/system/plugins/images/busy.gif" />Cargando..</h4>', css: {
-                           border: '1px solid #fff'
-                       }
-                   });
                    ajaxPost('/ajax/operacion/get_data_form/', {"cliente": $("#id_cliente").val(),{% if accion == 'update' %}"cajaop":{{ object.caja.id }}{% endif %}}, function (content) {
                        $('#id_servicio').html('');
                        $('#id_consignatario').html('');
@@ -125,13 +110,9 @@
                        $.each(content['consig'], function (i, item) {
                            $("<option value='" + item[0] + "'>" + item[1] + "</option>").appendTo("#id_consignatario");
                        });
-                       $.each(content['caja'], function (i, item) {
-                           $("<option value='" + item[0] + "'>" + item[1] + "</option>").appendTo("#id_caja");
-                       });
                    })
                    $('div.servicio').unblock();
                    $('div.consignatario').unblock();
-                   $('div.caja').unblock();
                }
         </script>
 {% endblock %}

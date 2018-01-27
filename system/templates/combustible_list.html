@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block main-content %}
+
+    <div id="add-pista-modal" class="modal fade" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel"
+         aria-hidden="true" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-hidden="true">×
+                    </button>
+                    <h4 class="modal-title">Habilitar Pista</h4></div>
+                <div class="modal-body" id="modal-body-combustible">
+                    {% include 'pista_form.html' %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-default waves-effect"
+                            data-dismiss="modal">Cerrar
+                    </button>
+                    <button id="pista-button" type="button"
+                            class="btn btn-danger waves-effect waves-light">
+                        Habilitar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-7 col-lg-9 col-sm-12 col-xs-12">
+            <div class="white-box">
+                <h3 class="box-title m-b-0">Listado de Combustible Cargado</h3>
+                <div class="button-box text-right">
+                    <button class="btn btn-success waves-effect waves-light" type="button"
+                            onclick="javascript:void(0)" data-toggle="modal" alt="default"
+                            data-target="#add-pista-modal"><span class="btn-label">
+                        <i class="fa fa-plus"></i></span>Habilitar Pista
+                    </button>
+                </div>
+                <p class="text-muted m-b-30"></p>
+                <div class="table-responsive">
+                    <table id="myTable" class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Camion</th>
+                            <th>Operador</th>
+                            <th>Fecha</th>
+                            <th>Litros</th>
+                            <th>Millaje</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for l in object_list %}
+                            <tr>
+                                <td>{{ l.camion_id }}</td>
+                                <td>{{ l.operador_id }}</td>
+                                <td>{{ l.fecha|date:"D d M Y f a" }}</td>
+                                <td>{{ l.litros }}</td>
+                                <td>{{ l.millaje }}</td>
+                            </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-12 col-xs-12">
+            <div class="white-box">
+                <h3 class="box-title">Combustible en Pista</h3>
+                <div class="weather-box">
+                    <div class="weather-top">
+                        <h2 class="pull-left">{% now "l" %}<br>
+                            <small>{% now "jS F Y H:i" %}</small>
+                        </h2>
+                        <div class="today_crnt">
+                            <canvas class="sleet" width="44" height="44"></canvas>
+                            <span>{{ pista_lts }}<sup>LTS</sup></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block css %}
+    <link href="{% static "system/plugins/bower_components/datatables/jquery.dataTables.min.css" %}" rel="stylesheet"
+          type="text/css"/>
+    <link href="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.min.css"
+          rel="stylesheet" type="text/css"/>
+{% endblock %}
+{% block js %}
+    <script src="{% static "system/plugins/bower_components/datatables/jquery.dataTables.min.js" %}"></script>
+    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.min.js"></script>
+    <script src="/static/system/plugins/bower_components/bootstrap-datepicker/bootstrap-datetimepicker.es.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#myTable').DataTable({"order": [2, 'desc']});
+            $('#pista-button').click(function () {
+                ajaxPost('/ajax/camion/add_comb_pista/', $("#pista-form").serialize(), function (content) {
+                    if (content == 1){
+                        location.reload();
+                    }else {
+                        $('#modal-body-combustible').html('')
+                        $('#modal-body-combustible').html(content)
+                    }
+                })
+            });
+        });
+        function DataTime(id) {
+            $("#" + id).datetimepicker({
+                language: 'es',
+                weekStart: 1,
+                todayBtn: 1,
+                autoclose: 1,
+                todayHighlight: 1,
+                startView: 2,
+                forceParse: 0,
+                showMeridian: 2
+            });
+        }
+    </script>
+{% endblock %}

@@ -2922,7 +2922,7 @@ Basic List
   font-size: 13px;
 }
 .weather-box .weather-top .today_crnt {
-  font-size: 45px;
+  font-size: 25px;
   font-weight: 100;
 }
 .weather-box .weather-top .today_crnt canvas {

@@ -3,14 +3,8 @@
         {% for field in form_payment %}
             <div class="col-md-6">
                 <div class="form-group">
-                    {% if field.name  == 'moneda' %}
-                        <label class="control-label">{{ field.label_tag }}</label>
-                        <select name="moneda" required="" class="form-control" id="id_moneda">
-                        </select>
-                    {% else %}
-                        <label class="control-label">{{ field.label_tag }}</label>
-                        {{ field }}
-                    {% endif %}
+                        <label class="control-label">{{ field.label_tag }}</label>                        {{ field }}
+
                     {% if field.errors %}
                         {% for f in field.errors %}
                             <span class="alert-block"><small>{{ f|safe }}</small></span>

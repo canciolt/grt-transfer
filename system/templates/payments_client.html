@@ -1,3 +1,71 @@
+<div class="row">
+    <div class="col-md-12 col-lg-12 col-sm-12">
+        <div class="white-box">
+            <div class="row row-in">
+                <div class="col-lg-3 col-sm-6 row-in-br  b-r-none">
+                    <div class="col-in row">
+                        <div class="col-md-6 col-sm-6 col-xs-6"><i class="fa fa-money"></i>
+                            <h5 class="text-muted vb">PAGOS EN MXN</h5></div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <h4 class="counter text-right m-t-15 text-info">{{ mxn }}</h4></div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="10"
+                                     aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 row-in-br">
+                    <div class="col-in row">
+                        <div class="col-md-6 col-sm-6 col-xs-6"><i class="fa fa-dollar"></i>
+                            <h5 class="text-muted vb">PAGOS EN USD</h5></div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <h4 class="counter text-right m-t-15 text-success">{{ usd }}</h4></div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40"
+                                     aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6  row-in-br">
+                    <div class="col-in row">
+                        <div class="col-md-6 col-sm-6 col-xs-6"><i class="ti-receipt"></i>
+                            <h5 class="text-muted vb">FACTURAS VENCIDAS</h5></div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <h4 class="counter text-right m-t-15 text-warning">{{ fv }}</h4></div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="40"
+                                     aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 b-0">
+                    <div class="col-in row">
+                        <div class="col-md-6 col-sm-6 col-xs-6"><i class="fa  fa-file-text-o"></i>
+                            <h5 class="text-muted vb">FACTURAS PENDIENTES</h5></div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <h4 class="counter text-right m-t-15 text-danger">{{ fp }}</h4></div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="10"
+                                     aria-valuemin="0" aria-valuemax="100" style="width: 100%"><span class="sr-only"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="table-responsive">
     <table id="myTable2" class="table table-striped">
         <thead>
