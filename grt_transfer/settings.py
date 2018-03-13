@@ -31,8 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-	'django_ajax',
-    'wkhtmltopdf',
+	'django_ajax',    
 	'system'
 ]
 
@@ -74,9 +73,9 @@ WSGI_APPLICATION = 'grt_transfer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'grt_transfer_db',
+        'NAME': 'grt_db',
         'USER': 'root',
-        'PASSWORD': 'AdMysqlDB',
+        'PASSWORD': 'AdmMysql2018',
         'HOST': '127.0.0.1',
         'PORT': '',
     }

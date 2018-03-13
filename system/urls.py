@@ -40,6 +40,6 @@ urlpatterns = [
     url(r'^ajax/camion/add_comb_pista/$', add_comb_pista, name='ajax-camion-add_comb_pista'),
 
     # Generate pdf
-    url(r'^pdf/factura/get_factura/(?P<pk>[\d+]+)$', MyPDFView.as_view(), name='pdf-get-factura'),
+#    url(r'^pdf/factura/get_factura/(?P<pk>[\d+]+)$', MyPDFView.as_view(), name='pdf-get-factura'),
 
 ]

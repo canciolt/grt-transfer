@@ -100,7 +100,7 @@ class Verificacion_Camion(models.Model):
 
 
 def get_colonia():
-    filePath = os.path.join(settings.BASE_DIR, 'system\json\colonias.json')
+    filePath = os.path.join(settings.BASE_DIR, 'system/json/colonias.json')
     colonias = json.loads(open(filePath).read())
     choice = []
     for c in colonias:
@@ -211,7 +211,7 @@ class Multas_Camion(models.Model):
         return self.numero
 
 def get_pais():
-    filePath = os.path.join(settings.BASE_DIR, 'system\json\paises.json')
+    filePath = os.path.join(settings.BASE_DIR, 'system/json/paises.json')
     paises = json.load(open(filePath))
     choice = []
     for pais in paises:
