@@ -24,7 +24,7 @@ from django.http import Http404
 def get_ciudades(request):
     if request.method == 'POST':
         r = request.POST['pais']
-        filePath = os.path.join(settings.BASE_DIR, 'system\json\ciudades.json')
+        filePath = os.path.join(settings.BASE_DIR, 'system/json/ciudades.json')
         ciudades = json.load(open(filePath))
         choice = []
         for c in ciudades:
@@ -247,6 +247,7 @@ def delconcepop(request):
 def get_tasa(request):
     if request.method == 'POST':
         tasa = get_tasa_cambio(request)
+        print tasa
         return tasa
     raise Http404
 

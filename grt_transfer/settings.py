@@ -72,12 +72,16 @@ WSGI_APPLICATION = 'grt_transfer.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'grt_db',
-        'USER': 'root',
-        'PASSWORD': 'AdmMysql2018',
-        'HOST': '127.0.0.1',
-        'PORT': '',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        #'ENGINE': 'django.db.backends.mysql',
+        #'sql_mode': 'traditional',
+        #'NAME': 'grt_transfer',
+        #'USER': 'grt',
+        #'PASSWORD': 'admingrt',
+        #'HOST': '127.0.0.1',
+        #'PORT': '',
+        #'OPTIONS': {'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"},
     }
 }
 

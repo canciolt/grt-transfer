@@ -23,12 +23,20 @@ from django.shortcuts import render
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 
+# Models and forms to use in generic class view
+models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
+              "cliente": Cliente, "consignatario": Consignatario, "patio": Patio, "servicio": Servicio_Cruce, \
+              "servicio_ext": Servicio_Extra, "operacion": Operacion, "factura": Factura}
+forms = {"camion": CamionForm, "operador": OperadorForm, "reparacion": Repcamion_Form, \
+             "cliente": Cliente_Form, "consignatario": Consignatario_Form, "patio": Patio_Form, \
+             "servicio": Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, \
+             "operacion": Operacion_Form, "factura": Factura_Form}
 
+# Main View 
 @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')
 class IndexView(TemplateView):
     template_name = "index.html"
-
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         operaciones = Operacion.objects.filter(estado="T")
@@ -42,7 +50,6 @@ class IndexView(TemplateView):
                 cancel += 1
             if o.estado == 'I':
                 proc += 1
-
         for o in operaciones:
             try:
                 if o.servicio.servicio_cruce:
@@ -50,25 +57,21 @@ class IndexView(TemplateView):
                         imp += 1
                     if o.servicio.servicio_cruce == "EXP" or o.servicio.servicio_cruce == "EXPV":
                         exp += 1
-
             except ObjectDoesNotExist:
                 pass
         clientes = Cliente.objects.all().order_by('-id')[0:5]
-
         context['importacion'] = imp
         context['exportacion'] = exp
         context['proceso'] = proc
         context['cancelada'] = cancel
         context['clientes'] = clientes
-
         return context
 
 
-
+# Login view
 class LoginView(FormView):
     form_class = AuthenticationForm
     template_name = 'login.html'
-
     @method_decorator(sensitive_post_parameters('password'))
     @method_decorator(csrf_protect)
     @method_decorator(never_cache)
@@ -77,13 +80,11 @@ class LoginView(FormView):
             return HttpResponseRedirect("/")
         else:
             return super(LoginView, self).dispatch(request, *args, **kwargs)
-
     def form_valid(self, form):
         auth_login(self.request, form.get_user())
         if self.request.session.test_cookie_worked():
             self.request.session.delete_test_cookie()
         return super(LoginView, self).form_valid(form)
-
     def get_success_url(self):
         if self.request.GET.get("next"):
             redirect_to = self.request.GET.get("next")
@@ -91,23 +92,15 @@ class LoginView(FormView):
             redirect_to = "/"
         return redirect_to
 
-
-class Dinamic_Add(SuccessMessageMixin, CreateView):
-    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "cliente": Cliente, "consignatario": Consignatario, "patio": Patio, "servicio": Servicio_Cruce, \
-              "servicio_ext": Servicio_Extra, "operacion": Operacion, "factura": Factura}
-    forms = {"camion": CamionForm, "operador": OperadorForm, "reparacion": Repcamion_Form, \
-             "cliente": Cliente_Form, "consignatario": Consignatario_Form, "patio": Patio_Form, \
-             "servicio": Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, \
-             "operacion": Operacion_Form, "factura": Factura_Form}
-
+# Generic class to add items.
+class Dinamic_Add(SuccessMessageMixin, CreateView):  
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        if kwargs['model'] in self.models:
-            self.model = self.models[kwargs['model']]
-            self.form_class = self.forms[kwargs['model']]
+        if kwargs['model'] in models:
+            self.model = models[kwargs['model']]
+            self.form_class = forms[kwargs['model']]
             self.template_name = kwargs['model'] + "_form.html"
             if self.model == Servicio_Extra or self.model == Servicio_Cruce:
                 self.success_url = "/list/servicio"
@@ -240,23 +233,15 @@ class Dinamic_Add(SuccessMessageMixin, CreateView):
                 event.save()
         return super(Dinamic_Add, self).form_valid(form)
 
-
+# Generic class to edit items.
 class Dinamic_Update(SuccessMessageMixin, UpdateView):
-    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario": User, "cliente": Cliente, "consignatario": Consignatario, "patio": Patio, \
-              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "operacion": Operacion}
-    forms = {"camion": CamionForm, "operador": OperadorForm, "reparacion": Repcamion_Form, \
-             "usuario": User_Form, "cliente": Cliente_Form, "consignatario": Consignatario_Form, \
-             "patio": Patio_Form, "servicio": Servicio_Cruce_Form, "servicio_ext": Servicio_Extra_Form, \
-             "operacion": Operacion_Form}
-
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        if kwargs['model'] in self.models:
-            self.model = self.models[kwargs['model']]
-            self.form_class = self.forms[kwargs['model']]
+        if kwargs['model'] in models:
+            self.model = models[kwargs['model']]
+            self.form_class = forms[kwargs['model']]
             self.template_name = kwargs['model'] + "_form.html"
             if self.model == Servicio_Extra or self.model == Servicio_Cruce:
                 self.success_url = "/list/servicio"
@@ -332,8 +317,7 @@ class Dinamic_Update(SuccessMessageMixin, UpdateView):
                 operador.camion.estado = 0
                 operador.camion.save()
                 camion.estado = 1
-                camion.save()
-        # Pendiente update Operacion -------
+                camion.save()        
         if self.model == Operacion:
             sello = Sello_Operacion.objects.filter(sello=form.cleaned_data['sello']).count()
             operador = get_object_or_404(Operador, pk=form.cleaned_data['operador'].id)
@@ -362,20 +346,15 @@ class Dinamic_Update(SuccessMessageMixin, UpdateView):
                 return redirect(self.success_url)
         return super(Dinamic_Update, self).form_valid(form)
 
-
-class Dinamic_List(ListView):
-    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario": User, "cliente": Cliente, "patio": Patio, "servicio": Servicio, "operacion": Operacion, \
-              "oppendientes": Operacion, "factura": Factura, "facturaspagadas": Factura, \
-              "facturascanceladas": Factura, "opterminadas": Operacion, "opcanceladas": Operacion, "combustible": Combustible}
+# Generic class to list items.
+class Dinamic_List(ListView):   
     pk_model = ""
-
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        if kwargs['model'] in self.models:
-            self.model = self.models[kwargs['model']]
+        if kwargs['model'] in models:
+            self.model = models[kwargs['model']]
             self.pk_model = kwargs['model']
             self.template_name = kwargs['model'] + "_list.html"
         else:
@@ -415,26 +394,20 @@ class Dinamic_List(ListView):
             return queryset.filter(estado='C').order_by('fecha')
         return queryset
 
-
+# Generic class to delete items.
 class Dinamic_Delete(SuccessMessageMixin, DeleteView):
-    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "usuario": User, "cliente": Cliente, "consignatario": Consignatario, "patio": Patio, \
-              "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, "operacion": Operacion, \
-              "payment": Pagos, "combustible": Combustible}
-
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        if kwargs['model'] in self.models:
-            self.model = self.models[kwargs['model']]
-            if self.models == Servicio_Extra or self.model == Servicio_Cruce:
+        if kwargs['model'] in models:
+            self.model = models[kwargs['model']]
+            if self.model == Servicio_Extra or self.model == Servicio_Cruce:
                 self.success_url = "/list/servicio"
             else:
                 self.success_url = "/list/" + kwargs['model']
             self.template_name = "delete.html"
             self.success_message = kwargs['model'] + " eliminado satisfactoriamente."
-
         else:
             raise Http404
         return super(Dinamic_Delete, self).dispatch(request, *args, **kwargs)
@@ -478,18 +451,14 @@ class Dinamic_Delete(SuccessMessageMixin, DeleteView):
             messages.add_message(request, messages.ERROR, 'Error al eliminar! dependencias protegidas')
             return redirect(self.success_url)
 
-
+# Generic class to view item.
 class Dinamic_Detail(DetailView):
-    models = {"camion": Camion, "operador": Operador, "reparacion": Reparacion_Camion, \
-              "cliente": Cliente, "patio": Patio, "servicio": Servicio_Cruce, "servicio_ext": Servicio_Extra, \
-              "operacion": Operacion, "factura": Factura}
-
     @method_decorator(login_required)
     @method_decorator(staff_member_required)
     @method_decorator(csrf_protect)
     def dispatch(self, request, *args, **kwargs):
-        if kwargs['model'] in self.models:
-            self.model = self.models[kwargs['model']]
+        if kwargs['model'] in models:
+            self.model = models[kwargs['model']]
             self.template_name = kwargs['model'] + "_detail.html"
         else:
             raise Http404
@@ -566,7 +535,7 @@ class Dinamic_Detail(DetailView):
             context['extra'] = extra
         return context
 
-
+# Class to register user.
 @method_decorator(login_required, name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')
 @method_decorator(csrf_protect, name='dispatch')
@@ -584,7 +553,7 @@ class Registro_View(SuccessMessageMixin, FormView):
         )
         return super(Registro_View, self).form_valid(form)
 
-
+# Class to change password.
 @method_decorator(login_required, name='dispatch')
 @method_decorator(staff_member_required, name='dispatch')
 @method_decorator(csrf_protect, name='dispatch')
@@ -605,7 +574,7 @@ class Password_View(SuccessMessageMixin, FormView):
         context['accion'] = 'passwd'
         return context
 
-
+# Class to add extra content to truck.
 @login_required
 @staff_member_required
 @csrf_protect
@@ -625,7 +594,7 @@ def Add_Exta_Camion(request, model, pk):
         form = forms[model](initial={'camion_id': pk})
     return render(request, 'vcamion_form.html', {'form': form, 'camion': camion, 'modelo': model})
 
-
+# Class to show payments.
 @method_decorator(never_cache, name='dispatch')
 @method_decorator(login_required, name='dispatch')
 class PagosView(TemplateView):
@@ -638,7 +607,7 @@ class PagosView(TemplateView):
         context['form_payment'] = Pagos_Form()
         return context
 
-
+# Class to get the current exchange rate.
 @login_required
 def get_tasa_cambio(request):
     try:
